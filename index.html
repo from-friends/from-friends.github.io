@@ -3,22 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ꜩ Baker Monitor</title>
+  <title>ꜩ Baker Monitor (Alpha Version)</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    input, button { margin: 5px 0; padding: 10px; font-size: 16px; }
-    #baker-details, #wallet-details, #transaction-details { margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9; }
-    #total-received, #transaction-summary { font-size: 18px; font-weight: bold; color: #333; }
-    .baker-link { color: #007BFF; text-decoration: none; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #baker-details, #wallet-details, #transaction-details {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+    #total-received, #transaction-summary {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    .baker-link {
+      color: #007BFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>ꜩ Baker Monitor</h1>
   <label for="wallet-address">Tezos Wallet Address:</label>
   <input type="text" id="wallet-address" placeholder="Enter Tezos wallet address...">
+  
   <label for="payout-wallet-address">Baker Payout Wallet Address:</label>
   <input type="text" id="payout-wallet-address" placeholder="If applicable...">
+
   <button id="fetch-info">Fetch Info</button>
+
   <div id="transaction-details" style="display: none;">
     <h2>Delegation Rewards</h2>
     <div id="total-received">Total Tezos Received: 0 ꜩ</div>
@@ -29,92 +53,179 @@
       <p>Next Expected Transaction Date: <span id="next-expected-date">-</span> (<span id="next-expected-human">-</span>)</p>
     </div>
     <ul id="transactions-list"></ul>
-    <p><a id="wallet-link" class="baker-link" href="#" target="_blank">View on TzKT</a></p>
+   <p><a id="wallet-link" class="baker-link" href="#" target="_blank">View on TzKT</a></p>
   </div>
+
+
   <div id="wallet-details" style="display: none;">
     <h2>Wallet Details</h2>
     <p><strong>Address:</strong> <span id="wallet-address-display">-</span></p>
     <p><strong>Current Balance:</strong> <span id="wallet-balance">-</span> ꜩ</p>
+
   </div>
+
   <div id="baker-details" style="display: none;">
     <h2>Baker Details</h2>
     <p><strong>Name:</strong> <span id="baker-name">-</span></p>
     <p><strong>Address:</strong> <span id="baker-address">-</span></p>
+  <!--  <p><strong>Details:</strong> <span id="baker-info">-</span></p>
+   <p><strong>Total Delegation Value:</strong> <span id="baker-delegation">-</span> ꜩ</p> -->
     <p><a id="baker-link" class="baker-link" href="#" target="_blank">View on TzKT</a></p>
   </div>
+
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const savedWallet = localStorage.getItem("tezosWalletAddress");
-      const savedPayoutWallet = localStorage.getItem("payoutWalletAddress");
-      if (savedWallet) document.getElementById("wallet-address").value = savedWallet;
-      if (savedPayoutWallet) document.getElementById("payout-wallet-address").value = savedPayoutWallet;
+      const savedWalletAddress = localStorage.getItem("tezosWalletAddress");
+      const savedPayoutWalletAddress = localStorage.getItem("payoutWalletAddress");
+
+      if (savedWalletAddress) {
+        document.getElementById("wallet-address").value = savedWalletAddress;
+      }
+      if (savedPayoutWalletAddress) {
+        document.getElementById("payout-wallet-address").value = savedPayoutWalletAddress;
+      }
     });
 
     document.getElementById("fetch-info").addEventListener("click", async () => {
-      const wallet = document.getElementById("wallet-address").value.trim();
-      const payoutWallet = document.getElementById("payout-wallet-address").value.trim();
-      if (!wallet) return alert("Enter a valid Tezos wallet address.");
-      localStorage.setItem("tezosWalletAddress", wallet);
-      if (payoutWallet) localStorage.setItem("payoutWalletAddress", payoutWallet);
+      const walletAddress = document.getElementById("wallet-address").value.trim();
+      const payoutWalletAddress = document.getElementById("payout-wallet-address").value.trim();
+
+      if (!walletAddress) {
+        alert("Please enter a valid Tezos wallet address.");
+        return;
+      }
+
+      // Save the entered addresses in localStorage
+      localStorage.setItem("tezosWalletAddress", walletAddress);
+      if (payoutWalletAddress) {
+        localStorage.setItem("payoutWalletAddress", payoutWalletAddress);
+      }
 
       const walletDetails = document.getElementById("wallet-details");
       const bakerDetails = document.getElementById("baker-details");
       const transactionDetails = document.getElementById("transaction-details");
-      walletDetails.style.display = bakerDetails.style.display = transactionDetails.style.display = "none";
+      walletDetails.style.display = "none";
+      bakerDetails.style.display = "none";
+      transactionDetails.style.display = "none";
 
       try {
-        const walletRes = await fetch(`https://api.tzkt.io/v1/accounts/${wallet}`);
-        if (!walletRes.ok) throw new Error(`Failed to fetch wallet details for: ${wallet}`);
-        const walletData = await walletRes.json();
-        document.getElementById("wallet-address-display").textContent = wallet;
+        // Fetch account details for the wallet
+        const walletResponse = await fetch(`https://api.tzkt.io/v1/accounts/${walletAddress}`);
+        if (!walletResponse.ok) {
+          throw new Error(`Failed to fetch wallet details for: ${walletAddress}`);
+        }
+        const walletData = await walletResponse.json();
+
+        // Display wallet details
+        document.getElementById("wallet-address-display").textContent = walletAddress;
         document.getElementById("wallet-balance").textContent = (walletData.balance / 1e6).toFixed(6);
         walletDetails.style.display = "block";
 
         if (walletData.delegate) {
-          const { alias, address } = walletData.delegate;
+          const { alias, address, stakingBalance } = walletData.delegate;
+
+          // Display baker details
           document.getElementById("baker-name").textContent = alias || "N/A";
           document.getElementById("baker-address").textContent = address;
+         // document.getElementById("baker-info").textContent = alias ? `Alias: ${alias}` : "No additional details available.";
+         // document.getElementById("baker-delegation").textContent = (stakingBalance / 1e6).toFixed(6); // Convert from mutez to ꜩ
           document.getElementById("baker-link").href = `https://tzkt.io/${address}`;
-          document.getElementById("wallet-link").href = `https://tzkt.io/${wallet}`;
+    document.getElementById("wallet-link").href = `https://tzkt.io/${walletAddress}`;
           bakerDetails.style.display = "block";
         } else {
           alert("This wallet is not delegated to any baker.");
         }
 
-        const txRes = await fetch(`https://api.tzkt.io/v1/operations/transactions?target=${wallet}&sort.desc=id&limit=2000`);
-        if (!txRes.ok) throw new Error("Failed to fetch transactions.");
-        const transactions = await txRes.json();
-        const filteredTx = payoutWallet ? transactions.filter(tx => tx.sender.address === payoutWallet) : transactions;
-        const totalReceived = filteredTx.reduce((sum, tx) => sum + tx.amount, 0) / 1e6;
-        const sortedTx = filteredTx.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        const firstDate = sortedTx.length ? new Date(sortedTx[0].timestamp).toLocaleString() : "-";
-        const lastDate = sortedTx.length ? new Date(sortedTx[sortedTx.length - 1].timestamp).toLocaleString() : "-";
-        let nextDate = "-", nextHuman = "-";
-        if (sortedTx.length) {
-          const latestDate = new Date(sortedTx[sortedTx.length - 1].timestamp);
+        // Fetch transactions for the wallet
+        const transactionResponse = await fetch(
+          `https://api.tzkt.io/v1/operations/transactions?target=${walletAddress}&sort.desc=id&limit=2000`
+        );
+        if (!transactionResponse.ok) {
+          throw new Error("Failed to fetch transactions.");
+        }
+        const transactions = await transactionResponse.json();
+
+        // Filter transactions by payout wallet address
+        const filteredTransactions = payoutWalletAddress
+          ? transactions.filter(tx => tx.sender.address === payoutWalletAddress)
+          : transactions;
+
+        // Calculate total received and display transaction details
+        const totalReceived = filteredTransactions.reduce((sum, tx) => sum + tx.amount, 0) / 1e6;
+        const sortedTransactions = filteredTransactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const totalTransactions = filteredTransactions.length;
+        const firstReceivedDate = sortedTransactions.length > 0 ? new Date(sortedTransactions[0].timestamp).toLocaleString() : "-";
+        const latestReceivedDate = sortedTransactions.length > 0 ? new Date(sortedTransactions[sortedTransactions.length - 1].timestamp).toLocaleString() : "-";
+
+        let nextExpectedDate = "-";
+        let nextExpectedHuman = "-";
+        if (sortedTransactions.length > 0) {
+          const latestDate = new Date(sortedTransactions[sortedTransactions.length - 1].timestamp);
           latestDate.setDate(latestDate.getDate() + 3);
-          nextDate = latestDate.toLocaleString();
-          const diff = Math.floor((latestDate - new Date()) / 1000);
-          nextHuman = `in ${Math.floor(diff / 86400)} days and ${Math.floor((diff % 86400) / 3600)} hours`;
+          nextExpectedDate = latestDate.toLocaleString();
+
+          // Calculate human-readable time difference
+          const now = new Date();
+          const diffInSeconds = Math.floor((latestDate.getTime() - now.getTime()) / 1000);
+          const days = Math.floor(diffInSeconds / (60 * 60 * 24));
+          const hours = Math.floor((diffInSeconds % (60 * 60 * 24)) / (60 * 60));
+          nextExpectedHuman = `in ${days} days and ${hours} hours`;
         }
 
         document.getElementById("total-received").textContent = `Total Tezos Received: ${totalReceived.toFixed(6)} ꜩ`;
         document.getElementById("transaction-summary").innerHTML = `
-          <p>Total Transactions: ${filteredTx.length}</p>
-          <p>First Received Date: ${firstDate}</p>
-          <p>Latest Received Date: ${lastDate}</p>
-          <p>Next Expected Transaction Date: <span id="next-expected-date">${nextDate}</span> (<span id="next-expected-human">${nextHuman}</span>)</p>`;
-        const txList = document.getElementById("transactions-list");
-        txList.innerHTML = "";
-        filteredTx.forEach(tx => {
+          <p>Total Transactions: ${totalTransactions}</p>
+          <p>First Received Date: ${firstReceivedDate}</p>
+          <p>Latest Received Date: ${latestReceivedDate}</p>
+          <p>Next Expected Transaction Date: <span id="next-expected-date">${nextExpectedDate}</span> (<span id="next-expected-human">${nextExpectedHuman}</span>)</p>
+        `;
+
+  /*      const transactionsList = document.getElementById("transactions-list");
+        transactionsList.innerHTML = "";
+        if (filteredTransactions.length > 0) {
+          filteredTransactions.forEach(tx => {
+            const li = document.createElement("li");
+// FromX: ${tx.sender.address}, 
+            li.textContent = `Amount: ${tx.amount / 1e6} ꜩ, Date: ${new Date(tx.timestamp).toLocaleString()}`;
+            transactionsList.appendChild(li);
+          });
+        } else {
           const li = document.createElement("li");
-          li.textContent = `Amount: ${tx.amount / 1e6} ꜩ, Date: ${new Date(tx.timestamp).toLocaleString()}`;
-          txList.appendChild(li);
-        });
-        transactionDetails.style.display = "block";
+          li.textContent = "No transactions found for this wallet address and payout address.";
+          transactionsList.appendChild(li);
+        }
+
+        transactionDetails.style.display = "block"; */
+
+
+const transactionsList = document.getElementById("transactions-list");
+transactionsList.innerHTML = "";
+
+if (filteredTransactions.length > 0) {
+  // Sort transactions by timestamp in descending order (latest first)
+  filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  filteredTransactions.forEach(tx => {
+    const li = document.createElement("li");
+    li.textContent = `Amount: ${tx.amount / 1e6} ꜩ, Date: ${new Date(tx.timestamp).toLocaleString()}`;
+    transactionsList.appendChild(li);
+  });
+} else {
+  const li = document.createElement("li");
+  li.textContent = "No transactions found for this wallet address and payout address.";
+  transactionsList.appendChild(li);
+}
+
+transactionDetails.style.display = "block";
+
+
+
       } catch (error) {
         alert(error.message);
       }
+
+
     });
   </script>
 </body>
