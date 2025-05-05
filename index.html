@@ -1,233 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ꜩ Baker Monitor (Alpha Version)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FromFriends | Blockchain Tools for Tezos, Base, Ethereum & Solana</title>
+  <meta name="description" content="FromFriends develops and markets blockchain tools for Tezos, Base, Ethereum, and Solana, including TezTracker, FrameToGo, and BakerMonitor." />
+
+  <!-- Favicon -->
+<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="shortcut icon" href="favicon.ico" />
+
+  <!-- Social Meta Tags (Open Graph) -->
+  <meta property="og:title" content="FromFriends" />
+  <meta property="og:description" content="We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
+  <meta property="og:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
+  <meta property="og:url" content="https://from-friends.github.io" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FromFriends" />
+  <meta name="twitter:description" content="We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
+  <meta name="twitter:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
+  <meta name="twitter:url" content="https://from-friends.github.io" />
+  
+
   <style>
+    :root {
+      --bg: #ccc;
+      --fg: #1f1f1f;
+      --accent: #ff007f;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 0;
+      font-family: sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      padding: 2rem;
+      text-align: left;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
-    input, button {
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 16px;
+
+    .container {
+      width: 80%;
+      max-width: 600px;
+     
+      padding: 20px;
+     
     }
-    #baker-details, #wallet-details, #transaction-details {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background: #f9f9f9;
+
+    header svg {
+      width: 200px;
+      height: auto;
+      margin-bottom: 2rem;
+      fill: var(--fg);
     }
-    #total-received, #transaction-summary {
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
+
+    nav {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .baker-link {
-      color: #007BFF;
+
+    nav a {
+      color: var(--fg);
       text-decoration: none;
       font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    section {
+      max-width: 600px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+
+    a {
+      color: var(--accent);
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+ 
+    a[target="_blank"] {
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
-  <h1>ꜩ Baker Monitor</h1>
-  <label for="wallet-address">Tezos Wallet Address:</label>
-  <input type="text" id="wallet-address" placeholder="Enter Tezos wallet address...">
-  
-  <label for="payout-wallet-address">Baker Payout Wallet Address:</label>
-  <input type="text" id="payout-wallet-address" placeholder="If applicable...">
+  <div class="container">
+    <header>
+      <section id="head">
+      <img src="fromfriends.svg" alt="Logo" height="50" />
+    </section>
+    </header>
 
-  <button id="fetch-info">Fetch Info</button>
+    <section id="news">
+      <img src="news.svg" alt="News Icon" height="25" />
+      <p>+ <strong>Tezos Dev Award, March 2025</strong><br/>We’re beyond excited to have won the <strong>Tezos Dev Award</strong> again — this time for <a href="https://news.tezoscommons.org/tezos-community-rewards-march-2025-03d5d4f1514f" target="_blank">March 2025</a>!</p>
+      <p>+ <strong>Tezos Dev Award, January 2025</strong><br/>We’re thrilled to announce that we won the <strong>Tezos Dev Award</strong> for <a href="https://medium.com/tezoscommons/tezos-community-rewards-january-2025-365deb2d4cbc" target="_blank">January 2025</a>!</p>
+    </section>
 
-  <div id="transaction-details" style="display: none;">
-    <h2>Delegation Rewards</h2>
-    <div id="total-received">Total Tezos Received: 0 ꜩ</div>
-    <div id="transaction-summary">
-      <p>Total Transactions: 0</p>
-      <p>First Received Date: -</p>
-      <p>Latest Received Date: -</p>
-      <p>Next Expected Transaction Date: <span id="next-expected-date">-</span> (<span id="next-expected-human">-</span>)</p>
-    </div>
-    <ul id="transactions-list"></ul>
-   <p><a id="wallet-link" class="baker-link" href="#" target="_blank">View on TzKT</a></p>
+    <section id="tools">
+      <img src="tools.svg" alt="Tools Icon" height="25" />
+      <p>+ <strong>TezTracker</strong><br/>Easily track your Tezos earnings across multiple wallets.<br />
+      <a href="https://from-friends.github.io/teztracker.html" target="_blank">https://from-friends.github.io/teztracker.html</a></p>
+
+      <p>+ <strong>FrameToGo</strong><br/>Instantly display your Tezos-based digital art collection on any screen for free.<br />
+      <a href="https://x.com/FromFriends__" target="_blank">In private beta. Contact us for an invite.</a></p>
+
+      <p>+ <strong>BakerMonitor</strong><br/>Monitor Tezos delegation reward payouts from bakers.<br />
+      <a href="https://from-friends.github.io/bakermonitor.html" target="_blank">https://from-friends.github.io/bakermonitor.html</a></p>
+    </section>
+
+    <section id="contactx">
+      <img src="contact.svg" alt="Contact Icon" height="25" />
+      <p>Contact us for collaborations, UI/UX or smart contract development.</p>
+      <p>+ <strong>Email</strong><br/>Email us at <a href="mailto:heyfromfriends@gmail.com" target="_blank">heyfromfriends@gmail.com</a></p>
+      <p>+ <strong>DM</strong><br/>Message us on X/Twitter <a href="https://x.com/FromFriends__" target="_blank">https://x.com/FromFriends__</a></p>
+    </section>
+
+    <section id="about">
+      <img src="about.svg" alt="About Icon" height="25" />
+      <p>We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana.</p>
+    </section>
   </div>
-
-
-  <div id="wallet-details" style="display: none;">
-    <h2>Wallet Details</h2>
-    <p><strong>Address:</strong> <span id="wallet-address-display">-</span></p>
-    <p><strong>Current Balance:</strong> <span id="wallet-balance">-</span> ꜩ</p>
-
-  </div>
-
-  <div id="baker-details" style="display: none;">
-    <h2>Baker Details</h2>
-    <p><strong>Name:</strong> <span id="baker-name">-</span></p>
-    <p><strong>Address:</strong> <span id="baker-address">-</span></p>
-  <!--  <p><strong>Details:</strong> <span id="baker-info">-</span></p>
-   <p><strong>Total Delegation Value:</strong> <span id="baker-delegation">-</span> ꜩ</p> -->
-    <p><a id="baker-link" class="baker-link" href="#" target="_blank">View on TzKT</a></p>
-  </div>
-
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const savedWalletAddress = localStorage.getItem("tezosWalletAddress");
-      const savedPayoutWalletAddress = localStorage.getItem("payoutWalletAddress");
-
-      if (savedWalletAddress) {
-        document.getElementById("wallet-address").value = savedWalletAddress;
-      }
-      if (savedPayoutWalletAddress) {
-        document.getElementById("payout-wallet-address").value = savedPayoutWalletAddress;
-      }
-    });
-
-    document.getElementById("fetch-info").addEventListener("click", async () => {
-      const walletAddress = document.getElementById("wallet-address").value.trim();
-      const payoutWalletAddress = document.getElementById("payout-wallet-address").value.trim();
-
-      if (!walletAddress) {
-        alert("Please enter a valid Tezos wallet address.");
-        return;
-      }
-
-      // Save the entered addresses in localStorage
-      localStorage.setItem("tezosWalletAddress", walletAddress);
-      if (payoutWalletAddress) {
-        localStorage.setItem("payoutWalletAddress", payoutWalletAddress);
-      }
-
-      const walletDetails = document.getElementById("wallet-details");
-      const bakerDetails = document.getElementById("baker-details");
-      const transactionDetails = document.getElementById("transaction-details");
-      walletDetails.style.display = "none";
-      bakerDetails.style.display = "none";
-      transactionDetails.style.display = "none";
-
-      try {
-        // Fetch account details for the wallet
-        const walletResponse = await fetch(`https://api.tzkt.io/v1/accounts/${walletAddress}`);
-        if (!walletResponse.ok) {
-          throw new Error(`Failed to fetch wallet details for: ${walletAddress}`);
-        }
-        const walletData = await walletResponse.json();
-
-        // Display wallet details
-        document.getElementById("wallet-address-display").textContent = walletAddress;
-        document.getElementById("wallet-balance").textContent = (walletData.balance / 1e6).toFixed(6);
-        walletDetails.style.display = "block";
-
-        if (walletData.delegate) {
-          const { alias, address, stakingBalance } = walletData.delegate;
-
-          // Display baker details
-          document.getElementById("baker-name").textContent = alias || "N/A";
-          document.getElementById("baker-address").textContent = address;
-         // document.getElementById("baker-info").textContent = alias ? `Alias: ${alias}` : "No additional details available.";
-         // document.getElementById("baker-delegation").textContent = (stakingBalance / 1e6).toFixed(6); // Convert from mutez to ꜩ
-          document.getElementById("baker-link").href = `https://tzkt.io/${address}`;
-    document.getElementById("wallet-link").href = `https://tzkt.io/${walletAddress}`;
-          bakerDetails.style.display = "block";
-        } else {
-          alert("This wallet is not delegated to any baker.");
-        }
-
-        // Fetch transactions for the wallet
-        const transactionResponse = await fetch(
-          `https://api.tzkt.io/v1/operations/transactions?target=${walletAddress}&sort.desc=id&limit=2000`
-        );
-        if (!transactionResponse.ok) {
-          throw new Error("Failed to fetch transactions.");
-        }
-        const transactions = await transactionResponse.json();
-
-        // Filter transactions by payout wallet address
-        const filteredTransactions = payoutWalletAddress
-          ? transactions.filter(tx => tx.sender.address === payoutWalletAddress)
-          : transactions;
-
-        // Calculate total received and display transaction details
-        const totalReceived = filteredTransactions.reduce((sum, tx) => sum + tx.amount, 0) / 1e6;
-        const sortedTransactions = filteredTransactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        const totalTransactions = filteredTransactions.length;
-        const firstReceivedDate = sortedTransactions.length > 0 ? new Date(sortedTransactions[0].timestamp).toLocaleString() : "-";
-        const latestReceivedDate = sortedTransactions.length > 0 ? new Date(sortedTransactions[sortedTransactions.length - 1].timestamp).toLocaleString() : "-";
-
-        let nextExpectedDate = "-";
-        let nextExpectedHuman = "-";
-        if (sortedTransactions.length > 0) {
-          const latestDate = new Date(sortedTransactions[sortedTransactions.length - 1].timestamp);
-          latestDate.setDate(latestDate.getDate() + 3);
-          nextExpectedDate = latestDate.toLocaleString();
-
-          // Calculate human-readable time difference
-          const now = new Date();
-          const diffInSeconds = Math.floor((latestDate.getTime() - now.getTime()) / 1000);
-          const days = Math.floor(diffInSeconds / (60 * 60 * 24));
-          const hours = Math.floor((diffInSeconds % (60 * 60 * 24)) / (60 * 60));
-          nextExpectedHuman = `in ${days} days and ${hours} hours`;
-        }
-
-        document.getElementById("total-received").textContent = `Total Tezos Received: ${totalReceived.toFixed(6)} ꜩ`;
-        document.getElementById("transaction-summary").innerHTML = `
-          <p>Total Transactions: ${totalTransactions}</p>
-          <p>First Received Date: ${firstReceivedDate}</p>
-          <p>Latest Received Date: ${latestReceivedDate}</p>
-          <p>Next Expected Transaction Date: <span id="next-expected-date">${nextExpectedDate}</span> (<span id="next-expected-human">${nextExpectedHuman}</span>)</p>
-        `;
-
-  /*      const transactionsList = document.getElementById("transactions-list");
-        transactionsList.innerHTML = "";
-        if (filteredTransactions.length > 0) {
-          filteredTransactions.forEach(tx => {
-            const li = document.createElement("li");
-// FromX: ${tx.sender.address}, 
-            li.textContent = `Amount: ${tx.amount / 1e6} ꜩ, Date: ${new Date(tx.timestamp).toLocaleString()}`;
-            transactionsList.appendChild(li);
-          });
-        } else {
-          const li = document.createElement("li");
-          li.textContent = "No transactions found for this wallet address and payout address.";
-          transactionsList.appendChild(li);
-        }
-
-        transactionDetails.style.display = "block"; */
-
-
-const transactionsList = document.getElementById("transactions-list");
-transactionsList.innerHTML = "";
-
-if (filteredTransactions.length > 0) {
-  // Sort transactions by timestamp in descending order (latest first)
-  filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-  filteredTransactions.forEach(tx => {
-    const li = document.createElement("li");
-    li.textContent = `Amount: ${tx.amount / 1e6} ꜩ, Date: ${new Date(tx.timestamp).toLocaleString()}`;
-    transactionsList.appendChild(li);
-  });
-} else {
-  const li = document.createElement("li");
-  li.textContent = "No transactions found for this wallet address and payout address.";
-  transactionsList.appendChild(li);
-}
-
-transactionDetails.style.display = "block";
-
-
-
-      } catch (error) {
-        alert(error.message);
-      }
-
-
-    });
-  </script>
 </body>
 </html>
 
