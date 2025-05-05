@@ -1,354 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>TezTracker - Easily Track Your Tezos Earnings.</title>
-  <meta name="description" content="Easily Track Your Tezos Earnings">
+    <meta charset="UTF-8">
+    <title>TezTracker - Track Tezos Earnings from All Your Wallets in One Place.</title>
+    <meta name="description" content="Track Tezos Earnings from All Your Wallets in One Place">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="shortcut icon" href="favicon.ico" />
 
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://from-friends.github.io/teztracker.html">
-  <meta property="og:title" content="TezTracker">
-  <meta property="og:description" content="Easily Track Your Tezos Earnings">
-  <meta property="og:image" content="https://from-friends.github.io/teztracker-social-meta-image.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://from-friends.github.io/teztracker.html">
+    <meta property="og:title" content="TezTracker">
+    <meta property="og:description" content="Track Tezos Earnings from All Your Wallets in One Place">
+    <meta property="og:image" content="https://from-friends.github.io/teztracker-social-meta-image.png">
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://from-friends.github.io/teztracker.html">
-  <meta property="twitter:title" content="TezTracker">
-  <meta property="twitter:description" content="Easily Track Your Tezos Earnings">
-  <meta property="twitter:image" content="https://from-friends.github.io/teztracker-social-meta-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://from-friends.github.io/teztracker.html">
+    <meta property="twitter:title" content="TezTracker">
+    <meta property="twitter:description" content="Track Tezos Earnings from All Your Wallets in One Place">
+    <meta property="twitter:image" content="https://from-friends.github.io/teztracker-social-meta-image.png">
 
-  <style>
-    :root {
-      --bg-color: #1e1e1e;
-      --card-bg: #2b2b2b;
-      --text-color: #e0e0e0;
-      --accent-color: #00bcd4;
-      --table-header-bg: #444;
-      --table-row-light: #2f2f2f;
-      --table-row-dark: #1e1e1e;
-    }
+    <style>
+        :root {
+            --bg-color: #1D2227;
+            --card-bg: #2b2b2b;
+            --text-color: #e0e0e0;
+            --accent-color: #616F82;
+            --table-header-bg: #444;
+            --table-row-light: #2f2f2f;
+            --table-row-dark: #1e1e1e;
+        }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 20px;
-    }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+        }
 
-    h1, h2, h3 {
-      color: var(--accent-color);
-    }
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      margin-bottom: 30px;
-      background-color: var(--card-bg);
-      border: 1px solid #444;
-    }
+        h1 {
+            font-size: 2em;
+        }
 
-    th, td {
-      padding: 10px;
-      text-align: left;
-      border: 1px solid #444;
-    }
+        h2 {
+            font-size: 1.5em;
+        }
 
-    th {
-      background-color: var(--table-header-bg);
-    }
+        h3 {
+            font-size: 1.2em;
+        }
 
-    tbody tr:nth-child(odd) {
-      background-color: var(--table-row-light);
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid #444;
+        }
 
-    tbody tr:nth-child(even) {
-      background-color: var(--table-row-dark);
-    }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #444;
+            font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    tfoot td {
-      font-weight: bold;
-      background-color: #333;
-    }
+        th {
+            background-color: var(--table-header-bg);
+        }
 
-    .tx-table-wrapper {
-      background: var(--card-bg);
-      padding: 10px 20px;
-      border-radius: 4px;
-      border: 1px solid #444;
-      margin-top: 30px;
-    }
+        tbody tr:nth-child(odd) {
+            background-color: var(--table-row-light);
+        }
 
-    .xtz-price {
-      font-size: 1.2em;
-      margin-bottom: 20px;
-    }
+        tbody tr:nth-child(even) {
+            background-color: var(--table-row-dark);
+        }
 
-    .emoji {
-      font-size: 1.1em;
-      margin-right: 5px;
-    }
+        tfoot td {
+            font-weight: bold;
+            background-color: #333;
+        }
 
-    .timestamp {
-      font-size: 0.9em;
-      color: #ccc;
-    }
+        .tx-table-wrapper {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            margin-top: 20px;
+        }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+        .xtz-price {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
 
-    a:hover {
-      text-decoration: underline;
-    }
+        .emoji {
+            font-size: 1em;
+            margin-right: 5px;
+        }
 
-    #addressInput {
-      margin-bottom: 20px;
-    }
+        .timestamp {
+            font-size: 0.8em;
+            color: #ccc;
+        }
 
-    #addressInput input {
-      width: 80%;
-      padding: 10px 12px;
-      font-size: 1em;
-      margin-right: 10px;
-    }
+        a {
+            color: #ff007f;
+            text-decoration: none;
+        }
 
-    #addressInput button {
-      padding: 8px 12px;
-      background-color: var(--accent-color);
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
+        a:hover {
+            text-decoration: underline;
+        }
 
-    #addressInput button:hover {
-      background-color: #0097a7;
-    }
+        #addressInput {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 5px;
+            flex-direction: column;
+        }
 
-    .title-wrapper {
-      margin-bottom: 20px;
-    }
+        #addressInput input {
+            width: 100%;
+            padding: 8px;
+            font-size: 1em;
+            margin-right: 0;
+        }
 
-    .title-wrapper small {
-      display: block;
-      margin-top: -10px;
-      font-size: 0.9em;
-      color: #bbb;
-    }
-  </style>
+        #addressInput button {
+            padding: 8px 12px;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        #addressInput button:hover {
+            background-color: #838893;
+        }
+
+        .title-wrapper {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .title-wrapper h1 {
+            font-size: 2.5em;
+        }
+
+        .title-wrapper small {
+            display: block;
+            margin-top: -25px;
+            font-size: 0.85em;
+            color: #bbb;
+        }
+
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        footer div {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-  <div class="title-wrapper">
-    <h1>TezTracker</h1>
-    <small>Track Tezos Earnings from All Your Wallets in One Place.</small>
-  </div>
-
-  <div id="addressInput">
-    <input type="text" id="inputAddresses" placeholder="Enter Tezos addresses, comma separated">
-    <button onclick="saveAddresses()">Save Addresses</button>
-  </div>
-
-  <div class="xtz-price" id="xtzPrice">Fetching current XTZ price...</div>
-
-  <h2>Tezos Balances</h2>
-  <table id="balanceTable">
-    <thead>
-      <tr>
-        <th>Address</th>
-        <th>XTZ</th>
-        <th>USD</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr>
-        <td>Total</td>
-        <td id="totalXTZ">...</td>
-        <td id="totalUSD">...</td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <h2>Latest Received Transactions</h2>
-  <div id="transactionsContainer"></div>
-
-  <footer>
-    <div>
-	<br/>
-      + <a href="https://from-friends.github.io/" target="_blank">Visit FromFriends™</a>
+    <div class="title-wrapper">
+        <h1>TezTracker</h1>
+        <small>Track Tezos Earnings from All Your Wallets in One Place.</small>
     </div>
-    <div style="margin-top: 5px;">
-      + <a href="https://x.com/FromFriends__" target="_blank">Follow x.com/FromFriends__</a>
+
+    <div id="addressInput">
+        <input type="text" id="inputAddresses" placeholder="Enter Tezos addresses, comma separated">
+        <button onclick="saveAddresses()">Save Addresses</button>
     </div>
-  </footer>
 
-  <script>
-    const animalEmojis = [
-      "🐶", "🐱", "🦊", "🐸", "🦁", "🦉", "🐼", "🐧", "🐨", "🐻",
-      "🐢", "🐍", "🐦", "🐞", "🐙", "🦄", "🦋", "🐝", "🐬", "🐹",
-      "🦓", "🦒", "🦔", "🐊", "🐘", "🐫", "🦘", "🦡"
-    ];
+   
 
-    const balanceBody = document.querySelector("#balanceTable tbody");
-    const totalXTZCell = document.getElementById("totalXTZ");
-    const totalUSDCell = document.getElementById("totalUSD");
-    const xtzPriceElement = document.getElementById("xtzPrice");
-    const txContainer = document.getElementById("transactionsContainer");
+    <h2>Tezos Balances</h2>  <div class="xtz-price" id="xtzPrice">Fetching current XTZ price...</div>
+    <table id="balanceTable">
+        <thead>
+            <tr>
+                <th>Address</th>
+                <th>XTZ</th>
+                <th>USD</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td id="totalXTZ">...</td>
+                <td id="totalUSD">...</td>
+            </tr>
+        </tfoot>
+    </table>
 
-    function getAddresses() {
-      const params = new URLSearchParams(window.location.search);
-      const raw = params.get("addresses");
-      return raw ? raw.split(",").map(a => a.trim()).filter(Boolean) : [];
-    }
+    <h2>Latest Received Transactions</h2>
+    <div id="transactionsContainer"></div>
 
-    function saveAddresses() {
-      const input = document.getElementById("inputAddresses").value;
-      const addresses = input.split(",").map(addr => addr.trim()).filter(Boolean);
-      const newUrl = `${window.location.pathname}?addresses=${addresses.join(",")}`;
-      window.location.href = newUrl;
-    }
+    <footer>
+        <div>
+            + <a href="https://from-friends.github.io/" target="_blank">Visit FromFriends™</a>
+        </div>
+        <div style="margin-top: 5px;">
+            + <a href="https://x.com/FromFriends__" target="_blank">Follow x.com/FromFriends__</a>
+        </div>
+    </footer>
 
-    async function fetchXTZtoUSD() {
-      const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=tezos&vs_currencies=usd");
-      const data = await res.json();
-      return data.tezos.usd;
-    }
+    <script>
+        const animalEmojis = [
+            "🐶", "🐱", "🦊", "🐸", "🦁", "🦉", "🐼", "🐧", "🐨", "🐻",
+            "🐢", "🐍", "🐦", "🐞", "🐙", "🦄", "🦋", "🐝", "🐬", "🐹",
+            "🦓", "🦒", "🦔", "🐊", "🐘", "🐫", "🦘", "🦡"
+        ];
 
-    async function fetchBalance(address) {
-      const res = await fetch(`https://api.tzkt.io/v1/accounts/${address}`);
-      const data = await res.json();
-      return data.balance / 1_000_000;
-    }
+        const balanceBody = document.querySelector("#balanceTable tbody");
+        const totalXTZCell = document.getElementById("totalXTZ");
+        const totalUSDCell = document.getElementById("totalUSD");
+        const xtzPriceElement = document.getElementById("xtzPrice");
+        const txContainer = document.getElementById("transactionsContainer");
 
-    async function fetchReceivedTransactions(address) {
-      const url = `https://api.tzkt.io/v1/operations/transactions?target=${address}&sort.desc=id&limit=15`;
-      const res = await fetch(url);
-      return await res.json();
-    }
+        function truncateAddress(address, startLength = 5, endLength = 5) {
+          if (!address || address.length <= startLength + endLength + 3) {
+            return address;
+          }
+          const start = address.substring(0, startLength);
+          const end = address.substring(address.length - endLength);
+          return `${start}...${end}`;
+        }
 
-    function formatDate(timestamp) {
-      return new Date(timestamp).toLocaleString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-      });
-    }
+        function getAddresses() {
+            const params = new URLSearchParams(window.location.search);
+            const raw = params.get("addresses");
+            return raw ? raw.split(",").map(a => a.trim()).filter(Boolean) : [];
+        }
 
-    function timeAgo(dateString) {
-      const now = new Date();
-      const then = new Date(dateString);
-      const diff = now - then;
+        function saveAddresses() {
+            const input = document.getElementById("inputAddresses").value;
+            const addresses = input.split(",").map(addr => addr.trim()).filter(Boolean);
+            const newUrl = `${window.location.pathname}?addresses=${addresses.join(",")}`;
+            window.location.href = newUrl;
+        }
 
-      const msInHour = 1000 * 60 * 60;
-      const msInDay = msInHour * 24;
-      const msInMonth = msInDay * 30.44;
+        async function fetchXTZtoUSD() {
+            const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=tezos&vs_currencies=usd");
+            const data = await res.json();
+            return data.tezos.usd;
+        }
 
-      const months = Math.floor(diff / msInMonth);
-      const days = Math.floor((diff % msInMonth) / msInDay);
-      const hours = Math.floor((diff % msInDay) / msInHour);
+        async function fetchBalance(address) {
+            const res = await fetch(`https://api.tzkt.io/v1/accounts/${address}`);
+            const data = await res.json();
+            return data.balance / 1_000_000;
+        }
 
-      let result = "";
-      if (months > 0) result += `${months} month${months > 1 ? "s" : ""}, `;
-      if (days > 0) result += `${days} day${days > 1 ? "s" : ""}, `;
-      result += `${hours} hour${hours !== 1 ? "s" : ""}`;
-      return result;
-    }
+        async function fetchReceivedTransactions(address) {
+            const url = `https://api.tzkt.io/v1/operations/transactions?target=${address}&sort.desc=id&limit=15`;
+            const res = await fetch(url);
+            return await res.json();
+        }
 
-    async function displayBalances(addresses) {
-      const usdRate = await fetchXTZtoUSD();
-      xtzPriceElement.innerHTML = `📈 Current Tezos Price: <strong>$${usdRate}</strong>`;
+        function formatDate(timestamp) {
+            return new Date(timestamp).toLocaleString("en-US", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            });
+        }
 
-      let totalXTZ = 0;
+        function timeAgo(dateString) {
+            const now = new Date();
+            const then = new Date(dateString);
+            const diff = now - then;
 
-      for (let i = 0; i < addresses.length; i++) {
-        const address = addresses[i];
-        const emoji = animalEmojis[i % animalEmojis.length];
-        const xtz = await fetchBalance(address);
-        const usd = xtz * usdRate;
-        totalXTZ += xtz;
+            const msInHour = 1000 * 60 * 60;
+            const msInDay = msInHour * 24;
+            const msInMonth = msInDay * 30.44;
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td><span class="emoji">${emoji}</span><a href="https://tzkt.io/${address}/operations/" target="_blank"><u>${address}</u></a></td>
-          <td>${xtz.toFixed(6)} XTZ</td>
-          <td>$${usd.toFixed(2)}</td>
-        `;
-        balanceBody.appendChild(row);
-      }
+            const months = Math.floor(diff / msInMonth);
+            const days = Math.floor((diff % msInMonth) / msInDay);
+            const hours = Math.floor((diff % msInDay) / msInHour);
 
-      const totalUSD = totalXTZ * usdRate;
-      totalXTZCell.textContent = `${totalXTZ.toFixed(6)} XTZ`;
-      totalUSDCell.textContent = `$${totalUSD.toFixed(2)}`;
-    }
+            let result = "";
+            if (months > 0) result += `${months} month${months > 1 ? "s" : ""}, `;
+            if (days > 0) result += `${days} day${days > 1 ? "s" : ""}, `;
+            result += `${hours} hour${hours !== 1 ? "s" : ""}`;
+            return result;
+        }
 
-    async function displayTransactions(addresses) {
-      for (let i = 0; i < addresses.length; i++) {
-        const address = addresses[i];
-        const emoji = animalEmojis[i % animalEmojis.length];
-        const txs = await fetchReceivedTransactions(address);
+        async function displayBalances(addresses) {
+            const usdRate = await fetchXTZtoUSD();
+            xtzPriceElement.innerHTML = `Current Tezos Price: <strong>$${usdRate}</strong>`;
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "tx-table-wrapper";
+            let totalXTZ = 0;
 
-        const heading = document.createElement("h3");
-        heading.innerHTML = `${emoji} <a href="https://tzkt.io/${address}/operations/" target="_blank">Transactions for: <u>${address}</u></a>`;
+            for (let i = 0; i < addresses.length; i++) {
+                const address = addresses[i];
+                const truncatedAddress = truncateAddress(address);
+                const emoji = animalEmojis[i % animalEmojis.length];
+                const xtz = await fetchBalance(address);
+                const usd = xtz * usdRate;
+                totalXTZ += xtz;
 
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        thead.innerHTML = `
-          <tr>
-            <th>From</th>
-            <th>Amount (XTZ)</th>
-            <th>Date</th>
-          </tr>
-        `;
-        const tbody = document.createElement("tbody");
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><span class="emoji">${emoji}</span><a href="https://tzkt.io/${address}/operations/" target="_blank"><u>${truncatedAddress}</u></a></td>
+                    <td>${xtz.toFixed(6)} XTZ</td>
+                    <td>$${usd.toFixed(2)}</td>
+                `;
+                balanceBody.appendChild(row);
+            }
 
-        txs.forEach(tx => {
-          const row = document.createElement("tr");
-          const formattedDate = formatDate(tx.timestamp);
-          const age = timeAgo(tx.timestamp);
+            const totalUSD = totalXTZ * usdRate;
+            totalXTZCell.textContent = `${totalXTZ.toFixed(6)} XTZ`;
+            totalUSDCell.textContent = `$${totalUSD.toFixed(2)}`;
+        }
 
-          row.innerHTML = `
-            <td>
-              ${tx.sender?.address 
-                ? `<a href="https://tzkt.io/${tx.sender.address}/operations/" target="_blank"><u>${tx.sender.address}</u></a>` 
-                : 'Unknown'}
-            </td>
-            <td>+${(tx.amount / 1_000_000).toFixed(6)} XTZ</td>
-            <td>
-              <div>${formattedDate}</div>
-              <div class="timestamp">🕒 ${age} ago</div>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
+        async function displayTransactions(addresses) {
+            for (let i = 0; i < addresses.length; i++) {
+                const address = addresses[i];
+                const emoji = animalEmojis[i % animalEmojis.length];
+                const txs = await fetchReceivedTransactions(address);
 
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        wrapper.appendChild(heading);
-        wrapper.appendChild(table);
-        txContainer.appendChild(wrapper);
-      }
-    }
+                const wrapper = document.createElement("div");
+                wrapper.className = "tx-table-wrapper";
 
-    const addresses = getAddresses();
-    if (addresses.length > 0) {
-      document.getElementById("inputAddresses").value = addresses.join(", ");
-      displayBalances(addresses);
-      displayTransactions(addresses);
-    }
-  </script>
+                const heading = document.createElement("h3");
+                heading.innerHTML = `${emoji} <a href="https://tzkt.io/${address}/operations/" target="_blank">Transactions for: <u>${truncateAddress(address)}</u></a>`;
+
+                const table = document.createElement("table");
+                const thead = document.createElement("thead");
+                thead.innerHTML = `
+                    <tr>
+                        <th>From</th>
+                        <th>Amount (XTZ)</th>
+                        <th>Date</th>
+                    </tr>
+                `;
+                const tbody = document.createElement("tbody");
+
+                txs.forEach(tx => {
+                    const row = document.createElement("tr");
+                    const formattedDate = formatDate(tx.timestamp);
+                    const age = timeAgo(tx.timestamp);
+                    const senderAddress = tx.sender?.address;
+                    const truncatedSender = senderAddress ? truncateAddress(senderAddress) : 'Unknown';
+
+                    row.innerHTML = `
+                        <td>
+                            ${senderAddress
+                                ? `<a href="https://tzkt.io/${senderAddress}/operations/" target="_blank"><u>${truncatedSender}</u></a>`
+                                : 'Unknown'}
+                        </td>
+                        <td>+${(tx.amount / 1_000_000).toFixed(6)} XTZ</td>
+                        <td>
+                            <div>${formattedDate}</div>
+                            <div class="timestamp">🕒 ${age} ago</div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                table.appendChild(thead);
+                table.appendChild(tbody);
+                wrapper.appendChild(heading);
+                wrapper.appendChild(table);
+                txContainer.appendChild(wrapper);
+            }
+        }
+
+        const addresses = getAddresses();
+        if (addresses.length > 0) {
+            document.getElementById("inputAddresses").value = addresses.join(", ");
+            displayBalances(addresses);
+            displayTransactions(addresses);
+        }
+    </script>
 </body>
 </html>
