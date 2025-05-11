@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objktz - Search for Objkt.com</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #181A20;
+            color: #F5F6FA;
+        }
+        h1 {
+            color: #FF6B6B;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        .slogan {
+            text-align: center;
+            color: #FF9E7D;
+            font-size: 16px;
+            margin-bottom: 30px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            padding: 40px;
+            color: #aaa;
+        }
+        .grid {
+            column-count: 4;
+            column-gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            transition: all 0.2s;
+        }
+        @media (max-width: 1100px) {
+            .grid { column-count: 3; }
+        }
+        @media (max-width: 800px) {
+            .grid { column-count: 2; }
+        }
+        @media (max-width: 500px) {
+            .grid { column-count: 1; }
+        }
+        .grid.compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            column-count: unset;
+            column-gap: 12px;
+            row-gap: 12px;
+        }
+        .grid.compact .item {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            margin-bottom: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .grid.compact .item-thumb-link img {
+            width: 100%;
+            height: 100px;
+            min-height: 100px;
+            max-height: 100px;
+            object-fit: cover;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .grid.compact .item-info {
+            padding: 8px 6px 8px 6px;
+        }
+        .grid.compact .item-title {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .grid.compact .item-artist {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .grid.compact .artist-avatar {
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            min-height: 16px;
+            max-width: 16px;
+            max-height: 16px;
+        }
+        .grid.compact .item-editions {
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        .grid.compact .item-price {
+            font-size: 12px;
+        }
+        .grid.compact .item-tags {
+            margin-top: 4px;
+        }
+        .grid.compact .tag {
+            font-size: 10px;
+            padding: 2px 5px;
+            margin-bottom: 2px;
+        }
+        .item {
+            background: #23262F;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 20px;
+            break-inside: avoid;
+            overflow: hidden;
+        }
+        .item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+        .item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #181A20;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .item-info {
+            padding: 18px 15px 15px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .item-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 17px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #FF9E7D;
+        }
+        .item-artist {
+            color: #fff;
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .token-id {
+            color: #666;
+            font-size: 14px;
+            font-weight: normal;
+            margin-left: 4px;
+        }
+        .artist-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            max-width: 40px;
+            max-height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #23262F;
+            border: 2px solid #FF6B6B;
+            flex-shrink: 0;
+            display: inline-block;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        .item-editions {
+            color: #FF9E7D;
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .item-price {
+            font-weight: bold;
+            color: #00E8B5;
+        }
+        .item-tags {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .tag {
+            display: inline-block;
+            background: #44474F;
+            color: #23262F;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            border: 1px solid #44474F;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .tag:hover {
+            background: #00E8B5;
+            color: #181A20;
+        }
+        button {
+            background: linear-gradient(90deg, #FF6B6B 0%, #FF9E7D 100%);
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.12);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #FF9E7D 0%, #FF6B6B 100%);
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.18);
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        .pagination button {
+            padding: 12px 24px;
+            font-size: 16px;
+            min-width: 120px;
+        }
+        .error {
+            color: #ff4d4f;
+            text-align: center;
+            padding: 20px;
+            background: #2a1a1a;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ff4d4f33;
+        }
+        .query-section {
+            margin-top: 40px;
+            background: #23262F;
+            padding: 20px;
+            border-radius: 8px;
+            color: #aaa;
+        }
+        pre {
+            background: #181A20;
+            color: #00E8B5;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        input[type="text"] {
+            background: #23262F;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 15px;
+            outline: none;
+            margin-right: 8px;
+            transition: border 0.2s;
+        }
+        input[type="text"]:focus {
+            border: 1.5px solid #FF6B6B;
+        }
+        select {
+            background: #23262F;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 15px;
+            outline: none;
+        }
+        ::selection {
+            background: #FF6B6B;
+            color: #181A20;
+        }
+        @media (max-width: 700px) {
+            .controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+        .buy-button {
+            background: linear-gradient(90deg, #FF6B6B 0%, #FF9E7D 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            width: 100%;
+            justify-content: center;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .buy-button:hover {
+            background: linear-gradient(90deg, #FF9E7D 0%, #FF6B6B 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+        }
+        .buy-button:disabled {
+            background: #44474F;
+            cursor: pointer;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        .tezos-logo {
+            width: 16px;
+            height: 16px;
+            margin-left: 2px;
+        }
+        .item-description {
+            font-style: italic;
+            color: #aaa;
+            font-size: 14px;
+            margin: 8px 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .footer {
+            margin-top: 60px;
+            padding: 40px 0;
+            border-top: 1px solid #23262F;
+            text-align: center;
+        }
+        .footer-image {
+            width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+        .footer-sections {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 20px;
+        }
+        .footer-section {
+            text-align: left;
+        }
+        .footer-section h3 {
+            color: #FF6B6B;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        .footer-links a {
+            color: #FF9E7D;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <h1><span id="site-title" style="cursor:pointer; text-decoration:underline;">Objktz</span></h1>
+    <div class="slogan">Digital Art Explorer for Objkt.com</div>
+    
+    <div class="controls">
+        <div>
+            <input type="text" id="tag-input" placeholder="Enter tag" value="objkt4objkt">
+            <button id="search-btn">Search</button>
+        </div>
+        <div>
+            <button id="toggle-grid-btn">Compact View</button>
+        </div>
+    </div>
+    
+    <div id="results" class="grid">
+        <div class="loading">Loading...</div>
+    </div>
+    
+    <div class="pagination">
+        <button id="prev-btn" disabled>Previous</button>
+        <button id="next-btn">Next</button>
+    </div>
+
+    <footer class="footer">
+        <a href="https://from-friends.github.io/" target="_blank">
+            <img src="fromfriends.svg" alt="From Friends" class="footer-image">
+        </a>
+        <div class="footer-sections">
+            <div class="footer-section">
+                <h3>Tezos Tools</h3>
+                <ul class="footer-links">
+                    <li><a href="https://from-friends.github.io/teztracker.html" target="_blank">TezTracker</a></li>
+                    <li><a href="https://from-friends.github.io/" target="_blank">FrameToGo</a></li>
+                    <li><a href="https://from-friends.github.io/bakermonitor.html" target="_blank">Baker Monitor</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="footer-links">
+                    <li><a href="https://x.com/FromFriends__" target="_blank">Follow us on X/Twitter</a></li>
+                    <li><a href="mailto:heyfromfriends@gmail.com">Email us</a></li>
+                    <li><a href="https://from-friends.github.io/" target="_blank">FromFriends Website</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        const API_URL = 'https://data.objkt.com/v3/graphql';
+        let currentOffset = 0;
+        const itemsPerPage = 20;
+        let currentTag = 'objkt4objkt';
+        let currentSort = 'TIMESTAMP_DESC';
+        
+        // DOM elements
+        const resultsContainer = document.getElementById('results');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const tagInput = document.getElementById('tag-input');
+        const searchBtn = document.getElementById('search-btn');
+        const toggleGridBtn = document.getElementById('toggle-grid-btn');
+        let compactMode = false;
+        
+        // Helper: get query param from URL
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        // Helper: set query param in URL (without reloading)
+        function setQueryParams(params) {
+            const url = new URL(window.location.href);
+            Object.keys(params).forEach(key => {
+                if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+                    url.searchParams.set(key, params[key]);
+                } else {
+                    url.searchParams.delete(key);
+                }
+            });
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Function to fetch data from Objkt.com API
+        async function fetchData() {
+            resultsContainer.innerHTML = '<div class="loading">Loading...</div>';
+            
+            const query = `
+query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_by: [token_order_by!]) {
+  token(
+    where: $where
+    limit: $limit
+    offset: $offset
+    order_by: $order_by
+  ) {
+    pk
+    name
+    token_id
+    description
+    artifact_uri
+    display_uri
+    thumbnail_uri
+    timestamp
+    supply
+    creators {
+      holder {
+        alias
+        address
+        logo
+      }
+    }
+    fa  {
+      contract
+    }
+    tags {
+      tag {
+        name
+      }
+    }
+    listings_active(limit: 1, order_by: {price: asc}) {
+      price
+      currency {
+        symbol
+      }
+    }
+  }
+}`;
+
+            // Map sort options to GraphQL order_by
+            const sortMap = {
+                'TIMESTAMP_DESC': [{ timestamp: 'desc' }],
+                'TIMESTAMP_ASC': [{ timestamp: 'asc' }],
+                'PRICE_ASC': [{ listings_active: { price: 'asc' } }],
+                'PRICE_DESC': [{ listings_active: { price: 'desc' } }],
+            };
+
+            const variables = {
+                where: {
+                    _or: [
+                        { tags: { tag: { name: { _eq: currentTag } } } },
+                        { tags: { tag: { name: { _eq: currentTag.toUpperCase() } } } }
+                    ]
+                },
+                limit: itemsPerPage,
+                offset: currentOffset,
+                order_by: sortMap[currentSort] || [{ timestamp: 'desc' }]
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query,
+                        variables
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.errors) {
+                    throw new Error(data.errors[0].message);
+                }
+                
+                renderResults(data.data.token);
+                
+                // Update pagination buttons
+                prevBtn.disabled = currentOffset === 0;
+                nextBtn.disabled = data.data.token.length < itemsPerPage;
+                
+            } catch (error) {
+                resultsContainer.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('Error fetching data:', error);
+            }
+        }
+        
+        // Function to render results
+        function renderResults(tokens) {
+            if (!tokens || tokens.length === 0) {
+                resultsContainer.innerHTML = `<div class="no-results">No results found for tag "${currentTag}"</div>`;
+                return;
+            }
+            
+            resultsContainer.innerHTML = '';
+            
+            tokens.forEach(token => {
+                const imageUrl = token.display_uri || token.thumbnail_uri || token.artifact_uri;
+                const formattedImageUrl = imageUrl ? formatIpfsUrl(imageUrl) : '/api/placeholder/250/200';
+                
+                // Get price info
+                let priceInfo = 'Not for sale';
+                if (token.listings_active && token.listings_active.length > 0) {
+                    const price = (token.listings_active[0].price / 1000000).toFixed(2);
+                    const currency = token.listings_active[0].currency?.symbol || 'tez';
+                    priceInfo = `${price} ${currency}`;
+                }
+                
+                // Extract tags
+                const tags = token.tags ? token.tags.map(t => t.tag.name).filter(Boolean) : [];
+                // Extract creator info
+                let creatorName = 'Unknown';
+                let creatorAvatar = '';
+                if (token.creators && token.creators.length > 0) {
+                    const holder = token.creators[0].holder;
+                    creatorName = holder.alias || (holder.address ? holder.address.substring(0, 8) + '...' : 'Unknown');
+                    creatorAvatar = holder.logo || 'placeholder-avatar.png';
+                }
+                // Editions info
+                const totalSold = token.supply || 0;
+                const isOpenEdition = token.tags && token.tags.some(t => t.tag.name.toLowerCase() === 'open edition');
+                // let editionsInfo = isOpenEdition ? `Open Edition (${priceInfo})` : `${totalSold} sold`;
+                let editionsInfo = isOpenEdition ? `Open Edition` : ``;
+
+                // Asset link
+                let contract = '';
+                
+                             //   console.log("XX", token.supply);
+
+                         //  console.log("YY", token);
+
+
+                if (token.fa && token.fa.contract) {
+                    contract = token.fa.contract;
+                } else if (token.fa_contract) {
+                    contract = token.fa_contract;
+                }
+                let assetUrl = '';
+                if (contract && token.token_id) {
+              //  assetUrl = `https://objkt.com/${contract}/${token.token_id}`;
+              assetUrl = `https://objkt.com/tokens/${token.fa.contract}/${token.token_id}?ref=tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5`;
+                } else {
+                //  assetUrl = `https://objkt.com/asset/${token.pk}`;
+                  assetUrl = `https://objkt.com/tokens/${token.fa.contract}/${token.token_id}?ref=tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5`;
+                }
+                
+                const itemEl = document.createElement('div');
+                itemEl.className = 'item';
+                itemEl.innerHTML = `
+                    <a href="${assetUrl}" target="_blank" class="item-thumb-link"><img src="${formattedImageUrl}" alt="${token.name || 'Unnamed token'}" onerror="this.src='/api/placeholder/250/200'"></a>
+                    <div class="item-info">
+                        <div class="item-title">${token.name || 'Unnamed token'}</div>
+                        <div class="item-artist">
+                            <img class="artist-avatar" src="${creatorAvatar}" alt="avatar" onerror="this.src='placeholder-avatar.png'">
+                            ${creatorName}
+                        </div>
+                        ${token.description ? `<div class="item-description">${token.description}</div>` : ''}
+                        <div class="item-editions" style="color: ${isOpenEdition ? '#FF6B6B' : '#FF9E7D'}">${editionsInfo}</div>
+                        ${token.listings_active && token.listings_active.length > 0 ? 
+                            `<a href="${assetUrl}" target="_blank" class="buy-button">
+                                Buy ${priceInfo} 
+                            </a>` 
+                            : 
+                            `<a href="${assetUrl}" target="_blank" class="buy-button">
+                                Buy now 
+                            </a>` 
+                        }
+                    </div>
+                `;
+                
+                // Add click handlers to tags (delegated)
+                setTimeout(() => {
+                    const tagEls = itemEl.querySelectorAll('.tag');
+                    tagEls.forEach(tagEl => {
+                        if (!tagEl.classList.contains('tag-click-bound')) {
+                            tagEl.classList.add('tag-click-bound');
+                            tagEl.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const tag = tagEl.textContent.replace(/^\+\d+ more$/, '').toLowerCase();
+                                if (tag && tag !== '+ more') {
+                                    tagInput.value = tag;
+                                    currentTag = tag;
+                                    currentOffset = 0;
+                                    setQueryParams({ search: tag, offset: 0 });
+                                    fetchData();
+                                }
+                            });
+                        }
+                    });
+                }, 0);
+                resultsContainer.appendChild(itemEl);
+            });
+        }
+        
+        // Helper function to format IPFS URLs
+        function formatIpfsUrl(url) {
+            if (!url) return '';
+            
+            if (url.startsWith('ipfs://')) {
+                return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
+            }
+            
+            return url;
+        }
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentOffset - itemsPerPage >= 0) {
+                currentOffset -= itemsPerPage;
+                setQueryParams({ search: currentTag, offset: currentOffset });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                fetchData();
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            currentOffset += itemsPerPage;
+            setQueryParams({ search: currentTag, offset: currentOffset });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            fetchData();
+        });
+        
+        searchBtn.addEventListener('click', () => {
+            const newTag = tagInput.value.trim().toLowerCase();
+            if (newTag) {
+                currentTag = newTag;
+                currentOffset = 0;
+                setQueryParams({ search: currentTag, offset: 0 });
+                fetchData();
+            }
+        });
+        
+        // Toggle grid view
+        toggleGridBtn.addEventListener('click', () => {
+            compactMode = !compactMode;
+            if (compactMode) {
+                resultsContainer.classList.add('compact');
+                toggleGridBtn.textContent = 'Masonry View';
+            } else {
+                resultsContainer.classList.remove('compact');
+                toggleGridBtn.textContent = 'Compact View';
+            }
+        });
+        
+        // On load: check for ?search= in URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlTag = getQueryParam('search')?.toLowerCase();
+            const urlOffset = parseInt(getQueryParam('offset'), 10);
+            if (urlTag) {
+                currentTag = urlTag;
+                tagInput.value = urlTag;
+            }
+            if (!isNaN(urlOffset) && urlOffset >= 0) {
+                currentOffset = urlOffset;
+            } else {
+                currentOffset = 0;
+            }
+            // Always sync the URL on launch
+            setQueryParams({ search: currentTag, offset: currentOffset });
+            fetchData();
+        });
+
+        // Reload to root if site title is clicked
+        document.getElementById('site-title').addEventListener('click', () => {
+            window.location.href = window.location.pathname;
+        });
+    </script>
+</body>
+</html>
