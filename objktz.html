@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Objktz - Search for Objkt.com</title>
+
+    <!-- SEO and Social Sharing Meta Tags -->
+    <meta name="description" content="Explore and discover digital art and NFTs from Objkt.com. Search by tags, view latest creations, and find unique Tezos collectibles.">
+
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://from-friends.github.io/objktz.html"> 
+    <meta property="og:title" content="Objktz - Digital Art Explorer for Objkt.com">
+    <meta property="og:description" content="Explore and discover digital art and NFTs from Objkt.com. Search by tags, view latest creations, and find unique Tezos collectibles.">
+    <meta property="og:image" content="https://from-friends.github.io/objktz-meta-social-media.jpeg"> 
+    <meta property="og:image:alt" content="Objktz Logo">
+
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://from-friends.github.io/objktz.html"> 
+    <meta name="twitter:title" content="Objktz - Digital Art Explorer for Objkt.com">
+    <meta name="twitter:description" content="Explore and discover digital art and NFTs from Objkt.com. Search by tags, view latest creations, and find unique Tezos collectibles.">
+    <meta name="twitter:image" content="https://from-friends.github.io/objktz-meta-social-media.jpeg"> 
+    <meta name="twitter:image:alt" content="Objktz Logo">
+    <meta name="twitter:site" content="@FromFriends__">
+    <!-- End SEO and Social Sharing Meta Tags -->
+
     <style>
         body {
             font-family: 'Inter', 'Arial', sans-serif;
@@ -12,7 +39,41 @@
             padding: 20px;
             background: #181A20;
             color: #F5F6FA;
+            position: relative; /* For centering loader */
         }
+        /* Loading Spinner Styles */
+        .loading-overlay {
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(24, 26, 32, 0.85); /* Semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .loading-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .spinner {
+            border: 5px solid #FF9E7D; /* Light orange */
+            border-top: 5px solid #FF6B6B; /* Pink */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* End Loading Spinner Styles */
         h1 {
             color: #FF6B6B;
             text-align: center;
@@ -58,51 +119,60 @@
             .grid { column-count: 1; }
         }
         .grid.compact {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            column-count: unset;
-            column-gap: 12px;
-            row-gap: 12px;
+            column-count: 8;
+            column-gap: 8px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        @media (max-width: 1100px) {
+            .grid.compact { column-count: 6; }
+        }
+        @media (max-width: 800px) {
+            .grid.compact { column-count: 4; }
+        }
+        @media (max-width: 500px) {
+            .grid.compact { column-count: 2; }
         }
         .grid.compact .item {
             width: 100%;
-            min-width: 0;
-            max-width: 100%;
-            margin-bottom: 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            margin-bottom: 8px;
+            break-inside: avoid;
+            display: inline-block;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+        }
+        .grid.compact .item-thumb-link {
+            display: block;
+            width: 100%;
         }
         .grid.compact .item-thumb-link img {
             width: 100%;
-            height: 100px;
-            min-height: 100px;
-            max-height: 100px;
-            object-fit: cover;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
+            height: auto;
+            display: block;
         }
         .grid.compact .item-info {
-            padding: 8px 6px 8px 6px;
+            padding: 6px 4px 6px 4px;
         }
-        .grid.compact .item-title {
-            font-size: 13px;
-            margin-bottom: 4px;
+        .grid.compact .item-title,
+        .grid.compact .item-description {
+            display: none !important;
         }
         .grid.compact .item-artist {
             font-size: 12px;
             margin-bottom: 4px;
+            gap: 4px;
         }
         .grid.compact .artist-avatar {
-            width: 16px;
-            height: 16px;
-            min-width: 16px;
-            min-height: 16px;
-            max-width: 16px;
-            max-height: 16px;
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            min-height: 20px;
+            max-width: 20px;
+            max-height: 20px;
         }
         .grid.compact .item-editions {
             font-size: 11px;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
         .grid.compact .item-price {
             font-size: 12px;
@@ -117,7 +187,6 @@
         }
         .item {
             background: #23262F;
-            border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.25);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: inline-block;
@@ -135,8 +204,6 @@
             height: auto;
             display: block;
             background: #181A20;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
         }
         .item-info {
             padding: 18px 15px 15px 15px;
@@ -305,15 +372,15 @@
             background: linear-gradient(90deg, #FF6B6B 0%, #FF9E7D 100%);
             color: #fff;
             border: none;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 6px 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-top: 12px;
+            margin-top: 6px;
             width: 100%;
             justify-content: center;
             transition: all 0.2s ease;
@@ -396,6 +463,10 @@
     <h1><span id="site-title" style="cursor:pointer; text-decoration:underline;">Objktz</span></h1>
     <div class="slogan">Digital Art Explorer for Objkt.com</div>
     
+    <div class="loading-overlay" id="loading-spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+    
     <div class="controls">
         <div>
             <input type="text" id="tag-input" placeholder="Enter tag" value="objkt4objkt">
@@ -455,6 +526,7 @@
         const tagInput = document.getElementById('tag-input');
         const searchBtn = document.getElementById('search-btn');
         const toggleGridBtn = document.getElementById('toggle-grid-btn');
+        const loadingSpinnerOverlay = document.getElementById('loading-spinner-overlay'); 
         let compactMode = false;
         
         // Helper: get query param from URL
@@ -477,8 +549,9 @@
         }
         
         // Function to fetch data from Objkt.com API
-        async function fetchData() {
-            resultsContainer.innerHTML = '<div class="loading">Loading...</div>';
+        async function fetchData(retryCount = 0) {
+            // resultsContainer.innerHTML = '<div class="loading">Loading...</div>'; // Remove old loading text
+            loadingSpinnerOverlay.classList.add('visible'); // Show spinner
             
             const query = `
 query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_by: [token_order_by!]) {
@@ -536,7 +609,7 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
                         { tags: { tag: { name: { _eq: currentTag.toUpperCase() } } } }
                     ]
                 },
-                limit: itemsPerPage,
+                limit: itemsPerPage + 1, // Request one extra item to check if there are more
                 offset: currentOffset,
                 order_by: sortMap[currentSort] || [{ timestamp: 'desc' }]
             };
@@ -556,18 +629,38 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
                 const data = await response.json();
                 
                 if (data.errors) {
+                    // Check for specific database query error and retry once
+                    if (data.errors[0].message.toLowerCase().includes('database query error') && retryCount < 1) {
+                        console.warn('Database query error, retrying...');
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+                        fetchData(retryCount + 1);
+                        return;
+                    }
                     throw new Error(data.errors[0].message);
                 }
                 
-                renderResults(data.data.token);
+                const tokens = data.data.token;
+                const hasMore = tokens.length > itemsPerPage;
+                
+                // Remove the extra item if it exists
+                if (hasMore) {
+                    tokens.pop();
+                }
+                
+                renderResults(tokens);
                 
                 // Update pagination buttons
                 prevBtn.disabled = currentOffset === 0;
-                nextBtn.disabled = data.data.token.length < itemsPerPage;
+                nextBtn.disabled = !hasMore;
                 
             } catch (error) {
                 resultsContainer.innerHTML = `<div class="error">Error: ${error.message}</div>`;
                 console.error('Error fetching data:', error);
+                // Reset pagination buttons on error
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+            } finally {
+                loadingSpinnerOverlay.classList.remove('visible'); // Always hide spinner
             }
         }
         
@@ -632,8 +725,30 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
                 
                 const itemEl = document.createElement('div');
                 itemEl.className = 'item';
-                itemEl.innerHTML = `
-                    <a href="${assetUrl}" target="_blank" class="item-thumb-link"><img src="${formattedImageUrl}" alt="${token.name || 'Unnamed token'}" onerror="this.src='/api/placeholder/250/200'"></a>
+                
+                let cardContent = compactMode ? `
+                    <a href="${assetUrl}" target="_blank" class="item-thumb-link">
+                        <img src="${formattedImageUrl}" alt="${token.name || 'Unnamed token'}" onerror="this.src='/api/placeholder/250/200'">
+                    </a>
+                    <div class="item-info">
+                        <div class="item-artist">
+                            <img class="artist-avatar" src="${creatorAvatar}" alt="avatar" onerror="this.src='placeholder-avatar.png'">
+                            ${creatorName}
+                        </div>
+                        <div class="item-editions" style="color: ${isOpenEdition ? '#FF6B6B' : '#FF9E7D'}">${editionsInfo}</div>
+                        ${token.listings_active && token.listings_active.length > 0 ? 
+                            `<a href="${assetUrl}" target="_blank" class="buy-button">
+                                Buy ${priceInfo} 
+                            </a>` 
+                            : 
+                            `<a href="${assetUrl}" target="_blank" class="buy-button">
+                                Buy now 
+                            </a>` 
+                        }
+                    </div>` : `
+                    <a href="${assetUrl}" target="_blank" class="item-thumb-link">
+                        <img src="${formattedImageUrl}" alt="${token.name || 'Unnamed token'}" onerror="this.src='/api/placeholder/250/200'">
+                    </a>
                     <div class="item-info">
                         <div class="item-title">${token.name || 'Unnamed token'}</div>
                         <div class="item-artist">
@@ -651,29 +766,9 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
                                 Buy now 
                             </a>` 
                         }
-                    </div>
-                `;
-                
-                // Add click handlers to tags (delegated)
-                setTimeout(() => {
-                    const tagEls = itemEl.querySelectorAll('.tag');
-                    tagEls.forEach(tagEl => {
-                        if (!tagEl.classList.contains('tag-click-bound')) {
-                            tagEl.classList.add('tag-click-bound');
-                            tagEl.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                const tag = tagEl.textContent.replace(/^\+\d+ more$/, '').toLowerCase();
-                                if (tag && tag !== '+ more') {
-                                    tagInput.value = tag;
-                                    currentTag = tag;
-                                    currentOffset = 0;
-                                    setQueryParams({ search: tag, offset: 0 });
-                                    fetchData();
-                                }
-                            });
-                        }
-                    });
-                }, 0);
+                    </div>`;
+
+                itemEl.innerHTML = cardContent;
                 resultsContainer.appendChild(itemEl);
             });
         }
@@ -719,13 +814,10 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
         // Toggle grid view
         toggleGridBtn.addEventListener('click', () => {
             compactMode = !compactMode;
-            if (compactMode) {
-                resultsContainer.classList.add('compact');
-                toggleGridBtn.textContent = 'Masonry View';
-            } else {
-                resultsContainer.classList.remove('compact');
-                toggleGridBtn.textContent = 'Compact View';
-            }
+            resultsContainer.classList.toggle('compact');
+            toggleGridBtn.textContent = compactMode ? 'Masonry View' : 'Compact View';
+            // Re-render the results to ensure proper display
+            fetchData();
         });
         
         // On load: check for ?search= in URL
