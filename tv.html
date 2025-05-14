@@ -148,6 +148,13 @@
         let recentSuccessfulUrls = [];
         let isSiteCurrentlyLoaded = false;
 
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
         function isValidHttpUrl(string) {
             let url;
             try {
@@ -328,25 +335,55 @@
 
         // Initialization
         function init() {
-            loadRecentSuccessfulUrls();
-            const lastTypedUrl = localStorage.getItem(LAST_TYPED_URL_KEY);
+            const addressFromUrl = getUrlParameter('address');
+            let initialUrlForInput = DEFAULT_PLACEHOLDER_URL; // Start with default
+            let autoLoadThisUrl = null;
 
-            if (recentSuccessfulUrls.length > 0) {
-                ipInput.value = recentSuccessfulUrls[0]; // Default to most recent successful
-            } else if (lastTypedUrl && lastTypedUrl !== DEFAULT_PLACEHOLDER_URL) {
-                ipInput.value = lastTypedUrl; // Fallback to last typed
+            if (addressFromUrl) {
+                document.title = addressFromUrl + " | " + document.title;
+                initialUrlForInput = addressFromUrl; // URL param overrides
+                // Attempt to auto-load if it's valid
+                let trimmedUrl = addressFromUrl.trim();
+                if (trimmedUrl && trimmedUrl !== DEFAULT_PLACEHOLDER_URL && isValidHttpUrl(trimmedUrl)) {
+                    autoLoadThisUrl = trimmedUrl;
+                } else if (trimmedUrl) {
+                    console.warn("Address from URL parameter is present (", trimmedUrl, ") but not a valid HTTP/S URL for auto-load.");
+                    // It will still be in the input box for the user to see/edit.
+                }
             } else {
-                ipInput.value = DEFAULT_PLACEHOLDER_URL; // Absolute fallback
+                // No URL param, use localStorage logic
+                loadRecentSuccessfulUrls(); // Load for setting input and for buttons
+                const lastTypedUrl = localStorage.getItem(LAST_TYPED_URL_KEY);
+
+                if (recentSuccessfulUrls.length > 0) {
+                    initialUrlForInput = recentSuccessfulUrls[0];
+                } else if (lastTypedUrl && lastTypedUrl !== DEFAULT_PLACEHOLDER_URL) {
+                    initialUrlForInput = lastTypedUrl;
+                }
+                // Else, initialUrlForInput remains DEFAULT_PLACEHOLDER_URL
+
+                // Check if this localStorage-derived value should be auto-loaded
+                let trimmedInputVal = initialUrlForInput.trim();
+                if (trimmedInputVal && trimmedInputVal !== DEFAULT_PLACEHOLDER_URL && isValidHttpUrl(trimmedInputVal)) {
+                    autoLoadThisUrl = trimmedInputVal;
+                }
+            }
+
+            ipInput.value = initialUrlForInput; // Set the input field's value
+
+            // Ensure recent URLs are loaded for buttons, especially if addressFromUrl was true
+            // and loadRecentSuccessfulUrls() wasn't called in the 'else' block.
+            if (addressFromUrl) {
+                loadRecentSuccessfulUrls(); 
             }
             
-            renderRecentUrlButtons();
-            updatePageUI();
+            renderRecentUrlButtons(); // Uses the `recentSuccessfulUrls` array
+            updatePageUI();         // Reflects current state
 
-            // Attempt to auto-load if a non-default URL is in the input
-            const currentInputValue = ipInput.value.trim();
-            if (currentInputValue && currentInputValue !== DEFAULT_PLACEHOLDER_URL && isValidHttpUrl(currentInputValue)) {
-                 // Delay slightly to ensure UI is rendered before potential alert from loadSite
-                setTimeout(loadSite, 100);
+            if (autoLoadThisUrl) {
+                console.log("Attempting to auto-load site from init:", autoLoadThisUrl);
+                // loadSite() reads from ipInput.value, which is now set correctly.
+                setTimeout(loadSite, 100); // Use a small delay
             }
         }
 
