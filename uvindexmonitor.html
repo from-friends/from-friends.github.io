@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UV Index Monitor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    #current-uv {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      background-color: #333;
+    }
+    #forecast {
+      width: 100%;
+      max-width: 600px;
+    }
+    .forecast-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid #444;
+    }
+    .forecast-item:last-child {
+      border-bottom: none;
+    }
+    .green {
+      background-color: #2e7d32;
+    }
+    .orange {
+      background-color: #f9a825;
+    }
+    .red {
+      background-color: #c62828;
+    }
+    .past-forecast {
+      opacity: 0.6;
+    }
+    .now-marker {
+      border-left: 3px solid #f0e68c; /* Khaki, good contrast on dark background */
+      /* The existing padding on .forecast-item will keep content aligned */
+    }
+    /* Styles for forecast item content */
+    .forecast-item .time-uv-group {
+      display: flex; /* Use flexbox to control spacing */
+      justify-content: space-between; /* Pushes time to left, UV to right within the group */
+      width: 100%; /* Ensure the group takes full width of the forecast-item */
+    }
+    .forecast-item .uv-value {
+      /* font-weight: bold; is handled by <strong> tag */
+      /* Optional: if more specific spacing is needed for uv-value from the time */
+      /* margin-left: 0.5rem; */ /* Adjust as needed, or rely on space-between */
+    }
+
+    #daily-high-uv {
+      /* Styling already applied inline, but can be moved here for consistency */
+      /* font-size: 0.8em; */
+      /* margin-top: 0.5rem; */
+      color: #ccc; /* Lighter color for sub-information */
+    }
+  </style>
+</head>
+<body>
+  <h1>UV Index Monitor</h1>
+  <div id="location-info" style="margin-bottom: 1rem; text-align: center; font-size: 0.9em; color: #bbb;">
+    <div>Lat: <span id="latitude">loading...</span>, Lng: <span id="longitude">loading...</span></div>
+    <div style="margin-top: 0.5rem;">
+      <button id="open-location-button" style="background-color: #333; color: #fff; border: 1px solid #555; padding: 8px 12px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; border-radius: 4px; cursor: pointer; margin-right: 5px;" disabled>📍 Open Location</button>
+      <button id="refresh-location" style="background-color: #333; color: #fff; border: 1px solid #555; padding: 8px 12px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; border-radius: 4px; cursor: pointer;">↺ Refresh Location</button>
+    </div>
+  </div>
+  <div id="current-uv">Loading current UV index...</div>
+  <div id="forecast">
+    <h2>Hourly UV Forecast</h2>
+    <div id="forecast-list"></div>
+  </div>
+
+  <script>
+    // const apiKey = 'openuv-4bsirmao4p7e3-io'; // API Key removed, will be fetched from URL
+    let apiAccessKey = null; // Will store API key from URL
+    let currentTimeFormat = '24h'; // Default format is now 24h
+    let lastForecastData = null;
+    let currentLatitude = null;
+    let currentLongitude = null;
+
+    // Function to get URL parameters
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]');
+      const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      const results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Initialize time format: URL parameter > localStorage > default (now 24h)
+    const urlTimeFormat = getUrlParameter('mode');
+    if (urlTimeFormat === '24') {
+      currentTimeFormat = '24h';
+      localStorage.setItem('uvTimeFormat', '24h'); // Update localStorage
+    } else if (urlTimeFormat === '12') {
+      currentTimeFormat = '12h';
+      localStorage.setItem('uvTimeFormat', '12h'); // Update localStorage
+    } else {
+      // If no valid URL parameter, try localStorage, default to 24h
+      currentTimeFormat = localStorage.getItem('uvTimeFormat') || '24h';
+    }
+
+    // Fetch API key from URL parameter 'key'
+    apiAccessKey = getUrlParameter('key');
+    if (!apiAccessKey) {
+      console.error('API key not provided in URL parameter "key".');
+      // Display error to user, e.g., in the current-uv div
+      const currentUvDiv = document.getElementById('current-uv');
+      if(currentUvDiv) currentUvDiv.textContent = 'API key missing. Please provide it via ?key=YOUR_API_KEY in the URL.';
+      // Further execution of API-dependent functions will be blocked.
+    }
+
+    function getUVColorClass(uv) {
+      if (uv > 5) {
+        return 'red';
+      } else if (uv > 4) { // Handles 4 < uv <= 5
+        return 'orange';
+      } else if (uv < 4) { // Handles uv < 4
+        return 'green';
+      }
+      // For uv = 4, or other unexpected values, return an empty string.
+      // This means no specific color class will be applied.
+      return '';
+    }
+
+    function formatTime(isoString, format = currentTimeFormat) {
+      const date = new Date(isoString);
+      const options = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: format === '12h'
+      };
+      if (format === '24h') {
+        options.hourCycle = 'h23'; // Ensures 00-23 hour cycle, e.g., 12:00 for noon, 00:00 for midnight
+      }
+      return date.toLocaleTimeString([], options);
+    }
+
+    function updateCurrentUV(uv, dailyHighUV = null) {
+      const uvDiv = document.getElementById('current-uv');
+      // Clear previous content, especially if we're adding a sub-element
+      uvDiv.innerHTML = '';
+
+      const currentUVText = document.createElement('div');
+      currentUVText.textContent = `Current UV Index: ${uv}`;
+      uvDiv.appendChild(currentUVText);
+
+      uvDiv.className = getUVColorClass(uv); // Set color based on current UV
+
+      if (dailyHighUV !== null && typeof dailyHighUV !== 'undefined') {
+        const dailyHighDiv = document.createElement('div');
+        dailyHighDiv.id = 'daily-high-uv';
+        dailyHighDiv.textContent = `Highest UV Today: ${dailyHighUV}`;
+        dailyHighDiv.style.fontSize = '0.8em'; // Smaller font for subline
+        dailyHighDiv.style.marginTop = '0.5rem';
+        uvDiv.appendChild(dailyHighDiv);
+      }
+    }
+
+    function updateForecast(forecastData) {
+      const forecastList = document.getElementById('forecast-list');
+      forecastList.innerHTML = ''; // Clear previous forecast
+      const now = new Date(); // Get current time for comparisons
+      let nowMarkerApplied = false; // To ensure only one item gets the "now" marker
+
+      // Check if forecastData is a valid array before iterating
+      if (Array.isArray(forecastData) && forecastData.length > 0) {
+        forecastData.forEach(item => {
+          const itemDate = new Date(item.uv_time);
+          const div = document.createElement('div');
+          let itemClasses = ['forecast-item', getUVColorClass(item.uv)];
+
+          // Check if forecast item is in the past
+          if (itemDate < now) {
+            itemClasses.push('past-forecast');
+          }
+
+          // Check for "now" marker: if the item's hour is the current hour of the current day
+          if (!nowMarkerApplied &&
+              itemDate.getFullYear() === now.getFullYear() &&
+              itemDate.getMonth() === now.getMonth() &&
+              itemDate.getDate() === now.getDate() &&
+              itemDate.getHours() === now.getHours()) {
+            itemClasses.push('now-marker');
+            nowMarkerApplied = true; // Mark only the first matching item
+          }
+
+          div.className = itemClasses.join(' ');
+          // formatTime will use the global currentTimeFormat by default
+          // Group time and UV for closer layout
+          div.innerHTML = `<span class="time-uv-group">${formatTime(item.uv_time)} <strong class="uv-value">UV: ${item.uv}</strong></span>`;
+          forecastList.appendChild(div);
+        });
+      } else {
+        // Log an error or display a message if forecast data is not available or in the wrong format
+        console.error('Error: Forecast data is missing or not in the expected format.', forecastData);
+        const errorDiv = document.createElement('div');
+        errorDiv.textContent = 'Could not load forecast data.';
+        errorDiv.className = 'forecast-item'; // Optional: style it like other items or give it a specific error style
+        forecastList.appendChild(errorDiv);
+      }
+    }
+
+    function calculateDailyHighUV(forecastData) {
+      if (!Array.isArray(forecastData) || forecastData.length === 0) {
+        return null;
+      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Start of today
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1); // Start of tomorrow
+
+      let dailyHigh = -1;
+
+      forecastData.forEach(item => {
+        const itemDate = new Date(item.uv_time);
+        if (itemDate >= today && itemDate < tomorrow) {
+          if (item.uv > dailyHigh) {
+            dailyHigh = item.uv;
+          }
+        }
+      });
+      return dailyHigh >= 0 ? dailyHigh : null;
+    }
+
+    function fetchUVData(lat, lng) {
+      if (!apiAccessKey) {
+        console.error("Cannot fetch UV data: API key is missing.");
+        // Optionally update UI to reflect that data cannot be fetched
+        document.getElementById('current-uv').textContent = 'API key missing. Cannot fetch data.';
+        document.getElementById('forecast-list').innerHTML = ''; // Clear forecast
+        return; // Stop execution if no API key
+      }
+
+      let dailyHighUV = null; // Variable to store calculated daily high
+
+      // Store coordinates globally and update display
+      currentLatitude = lat;
+      currentLongitude = lng;
+      const latDisplay = document.getElementById('latitude');
+      const lngDisplay = document.getElementById('longitude');
+      const openLocationButton = document.getElementById('open-location-button');
+
+      if (latDisplay) latDisplay.textContent = lat.toFixed(4);
+      if (lngDisplay) lngDisplay.textContent = lng.toFixed(4);
+      if (openLocationButton) openLocationButton.disabled = false; // Enable button
+
+      // Fetch current UV index
+      fetch(`https://api.openuv.io/api/v1/uv?lat=${lat}&lng=${lng}`, {
+        headers: {
+          'x-access-token': apiAccessKey
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.result && typeof data.result.uv !== 'undefined') {
+          // Pass dailyHighUV (which might be null or calculated by now from forecast)
+          updateCurrentUV(data.result.uv, dailyHighUV);
+        } else {
+          console.error('Error: Invalid current UV API response structure.', data);
+          document.getElementById('current-uv').textContent = 'Error loading current UV.';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching current UV data:', error);
+        document.getElementById('current-uv').textContent = 'Error fetching current UV data.';
+      });
+
+      // Fetch UV forecast
+      fetch(`https://api.openuv.io/api/v1/forecast?lat=${lat}&lng=${lng}`, {
+        headers: {
+          'x-access-token': apiAccessKey
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        // The forecast API returns the forecast array directly in `data.result`
+        // Check if data and data.result are valid before calling updateForecast
+        if (data && data.result) {
+          lastForecastData = data.result; // Store for re-rendering on format change
+          dailyHighUV = calculateDailyHighUV(lastForecastData); // Calculate daily high
+          updateForecast(lastForecastData);
+
+          // Re-update current UV display if it was already rendered, now with daily high
+          // This is a bit of a race condition fix: if current UV loaded before forecast
+          const currentUVElement = document.getElementById('current-uv');
+          const currentUVTextContent = currentUVElement.firstChild ? currentUVElement.firstChild.textContent : "";
+          if (currentUVTextContent.startsWith("Current UV Index:")) {
+              const currentUVValue = parseFloat(currentUVTextContent.replace("Current UV Index: ", ""));
+              if (!isNaN(currentUVValue)) {
+                 updateCurrentUV(currentUVValue, dailyHighUV);
+              }
+          }
+
+        } else {
+          console.error('Error: Invalid forecast API response structure.', data);
+          lastForecastData = null; // Clear if invalid
+          updateForecast(null); // or pass undefined, which updateForecast already handles
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching UV forecast data:', error);
+        lastForecastData = null; // Clear on error
+        // Call updateForecast with null/undefined to display error message
+        updateForecast(null);
+      });
+    }
+
+    function getLocationAndFetchData() {
+      if (!apiAccessKey) {
+        console.warn("Skipping location and data fetch: API key is missing.");
+        // The message about missing API key should already be displayed from the initial check.
+        // Ensure location fetching doesn't proceed if API key isn't there to avoid partial useless operations.
+        const latDisplay = document.getElementById('latitude');
+        const lngDisplay = document.getElementById('longitude');
+        if (latDisplay) latDisplay.textContent = 'API Key Missing';
+        if (lngDisplay) lngDisplay.textContent = '-';
+        return;
+      }
+
+      const latDisplay = document.getElementById('latitude');
+      const lngDisplay = document.getElementById('longitude');
+      const openLocationButton = document.getElementById('open-location-button');
+
+      // Set initial loading state for coordinates display & disable open location button
+      if (latDisplay) latDisplay.textContent = 'fetching...';
+      if (lngDisplay) lngDisplay.textContent = 'fetching...';
+      if (openLocationButton) openLocationButton.disabled = true;
+      currentLatitude = null; // Reset global coords
+      currentLongitude = null;
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            currentLatitude = lat; // Store globally
+            currentLongitude = lng;
+
+            // Update display immediately upon successful fetch
+            if (latDisplay) latDisplay.textContent = lat.toFixed(4);
+            if (lngDisplay) lngDisplay.textContent = lng.toFixed(4);
+            if (openLocationButton) openLocationButton.disabled = false; // Enable button
+
+            fetchUVData(lat, lng);
+          },
+          error => {
+            console.error('Geolocation error:', error);
+            const errorMsg = 'Unable to retrieve location.';
+            if (latDisplay) latDisplay.textContent = errorMsg;
+            if (lngDisplay) lngDisplay.textContent = 'N/A';
+            if (openLocationButton) openLocationButton.disabled = true;
+            document.getElementById('current-uv').textContent = errorMsg;
+          }
+        );
+      } else {
+        const errorMsg = 'Geolocation not supported.';
+        console.error('Geolocation not supported by this browser.');
+        if (latDisplay) latDisplay.textContent = errorMsg;
+        if (lngDisplay) lngDisplay.textContent = 'N/A';
+        if (openLocationButton) openLocationButton.disabled = true;
+        document.getElementById('current-uv').textContent = errorMsg;
+      }
+    }
+
+    // Initialize data fetching (will be guarded by apiAccessKey check in getLocationAndFetchData)
+    getLocationAndFetchData();
+
+    // Event listener for the Open Location button
+    const openLocationButton = document.getElementById('open-location-button');
+    if (openLocationButton) {
+      openLocationButton.addEventListener('click', () => {
+        if (currentLatitude !== null && currentLongitude !== null) {
+          const googleMapsUrl = `https://www.google.com/maps?q=${currentLatitude},${currentLongitude}`;
+          window.open(googleMapsUrl, '_blank');
+        }
+      });
+    }
+
+    // Add event listener for the refresh location button
+    const refreshLocationButton = document.getElementById('refresh-location');
+    if (refreshLocationButton) {
+      refreshLocationButton.addEventListener('click', () => {
+        // Optionally clear old data or show loading state more explicitly here
+        getLocationAndFetchData(); // Re-fetch location and UV data
+      });
+    } else {
+      console.warn('Refresh location button (refresh-location) not found.');
+    }
+  </script>
+</body>
+</html>
