@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Code Preview - Turn AI Code Into Instant Online Previews</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #000000; /* Pitch black */
+      color: #e0e0e0; /* Light grey text */
+    }
+
+    #toolbar {
+      display: flex; 
+      background-color: #1a1a1a; /* Dark grey for toolbar */
+      padding: 10px 15px;
+      border-bottom: 1px solid #333333; /* Subtle border */
+      flex-shrink: 0;
+    }
+
+    #toolbar button {
+      padding: 8px 15px;
+      font-size: 14px;
+      border: 1px solid #444444; /* Darker border */
+      background-color: #2c2c2c; /* Dark button background */
+      color: #e0e0e0; /* Light text on buttons */
+      cursor: pointer;
+      margin-right: 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    }
+
+    #toolbar button:hover {
+      background-color: #FF8C00; /* DarkOrange for hover on general buttons */
+      color: #FFFFFF; 
+      border-color: #E67E22; /* Carrot Orange for border */
+    }
+
+    /* Specific style for the Paste Code button in toolbar */
+    #toolbar button#pasteToolbarButton {
+        background-color: #FF5722; /* Tomato - standout orange */
+        color: #FFFFFF; 
+        border-color: #E64A19; /* Darker Tomato border */
+    }
+    #toolbar button#pasteToolbarButton:hover {
+        background-color: #E64A19; /* Darker Tomato on hover */
+        border-color: #D32F00; /* Even darker for hover border */
+    }
+
+    #toolbar button:last-child {
+        margin-right: 0;
+    }
+
+    #initialView {
+      display: flex;
+      flex-grow: 1;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    /* Initial large Paste Code button */
+    #pasteInitialButton {
+      padding: 25px 50px;
+      font-size: 28px;
+      border: none;
+      background-color: #FF5722; /* Tomato - standout orange */
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3); /* Shadow for orange button */
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+    }
+
+    #pasteInitialButton:hover {
+        background-color: #E64A19; /* Darker Tomato */
+        transform: translateY(-2px);
+    }
+     #pasteInitialButton:active {
+        transform: translateY(0px);
+     }
+
+    textarea#codeInput {
+      width: 100%;
+      height: 40vh; 
+      padding: 15px;
+      font-family: monospace;
+      font-size: 14px;
+      box-sizing: border-box;
+      border: none;
+      border-bottom: 1px solid #333333; /* Subtle border for textarea */
+      resize: vertical;
+      background-color: #1e1e1e; /* Dark background for textarea */
+      color: #d4d4d4; /* Light text for code */
+    }
+
+    iframe#previewFrame {
+      flex-grow: 1;
+      width: 100%;
+      border: none;
+      background-color: #000000; /* Match body background */
+    }
+  </style>
+</head>
+<body>
+  <div id="toolbar" style="display: none;">
+    <button id="clearButton">Clear Code</button>
+    <button id="pasteToolbarButton">Paste Code</button>
+    <button id="showCodeButton">Show Code</button>
+    <button id="rerenderButton">Rerender</button>
+    <button id="fullscreenButton">Fullscreen</button>
+  </div>
+
+  <div id="initialView">
+    <button id="pasteInitialButton">Paste Code</button>
+  </div>
+
+  <textarea id="codeInput" placeholder="Paste your HTML/CSS/JS code here..." style="display: none;"></textarea>
+  <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin" style="display: none;"></iframe>
+
+  <script>
+    const codeInput = document.getElementById('codeInput');
+    const previewFrame = document.getElementById('previewFrame');
+    const initialView = document.getElementById('initialView');
+    const pasteInitialButton = document.getElementById('pasteInitialButton');
+    const toolbar = document.getElementById('toolbar');
+    const clearButton = document.getElementById('clearButton');
+    const pasteToolbarButton = document.getElementById('pasteToolbarButton');
+    const showCodeButton = document.getElementById('showCodeButton');
+    const rerenderButton = document.getElementById('rerenderButton');
+    const fullscreenButton = document.getElementById('fullscreenButton');
+
+    function renderCode(codeToRender) {
+      try {
+        previewFrame.srcdoc = codeToRender;
+      } catch (e) {
+        console.error("Error rendering code:", e);
+        previewFrame.srcdoc = `<p style="color:red; font-family: sans-serif;">Error rendering code. See console for details.</p>`;
+      }
+    }
+
+    function showEditor() {
+      initialView.style.display = 'none';
+      toolbar.style.display = 'flex';
+      previewFrame.style.display = 'block';
+      
+      codeInput.style.display = 'none'; 
+      showCodeButton.textContent = 'Show Code';
+
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText()
+          .then(text => {
+            if (text && text.trim() !== '') {
+              codeInput.value = text;
+              renderCode(text); 
+            } else {
+                console.warn('Clipboard is empty or does not contain text.');
+                codeInput.value = '';
+            }
+          })
+          .catch(err => {
+            console.warn('Failed to read clipboard contents automatically (this often requires HTTPS and user permission): ', err);
+            codeInput.value = '';
+          });
+      } else {
+        console.warn('Clipboard API not available. Please paste manually after showing the code input.');
+        codeInput.value = '';
+      }
+    }
+
+    function clearAllCode() {
+      codeInput.value = '';
+      renderCode('');
+      if (codeInput.style.display !== 'none') {
+        codeInput.focus();
+      }
+    }
+
+    function toggleCodeVisibility() {
+      if (codeInput.style.display === 'none') {
+        codeInput.style.display = 'block';
+        showCodeButton.textContent = 'Hide Code';
+        codeInput.focus(); 
+      } else {
+        codeInput.style.display = 'none';
+        showCodeButton.textContent = 'Show Code';
+      }
+    }
+
+    function requestPasteFocus() {
+      if (codeInput.style.display === 'none') {
+        toggleCodeVisibility(); 
+      } else {
+          codeInput.focus();
+      }
+    }
+
+    function handleRerenderClick() {
+        const currentCode = codeInput.value;
+        renderCode(currentCode);
+    }
+
+    function toggleFrameFullscreen() {
+      if (!document.fullscreenElement) {
+        if (previewFrame.requestFullscreen) {
+          previewFrame.requestFullscreen().catch(err => {
+             console.warn(`iframe.requestFullscreen failed: ${err.message}. Trying document.body.`);
+             document.documentElement.requestFullscreen().catch(errFallback => {
+                 alert(`Error attempting to enable full-screen mode: ${errFallback.message} (${errFallback.name})`);
+             });
+          });
+        } else {
+           document.documentElement.requestFullscreen().catch(err => {
+             alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+           });
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    pasteInitialButton.addEventListener('click', showEditor);
+    
+    codeInput.addEventListener('paste', (event) => {
+      event.preventDefault();
+      const pastedText = event.clipboardData.getData('text/plain');
+      codeInput.value = pastedText;
+      renderCode(pastedText);
+    });
+
+    codeInput.addEventListener('input', () => {
+        setTimeout(() => renderCode(codeInput.value), 100); 
+    });
+
+    clearButton.addEventListener('click', clearAllCode);
+    pasteToolbarButton.addEventListener('click', requestPasteFocus);
+    showCodeButton.addEventListener('click', toggleCodeVisibility);
+    rerenderButton.addEventListener('click', handleRerenderClick);
+    fullscreenButton.addEventListener('click', toggleFrameFullscreen);
+
+  </script>
+</body>
+</html>
