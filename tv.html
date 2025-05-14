@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV as a Second Display – Local Network IP Address Site Preview</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* Prevents scrollbars on the body */
+            font-size: 1.2em; /* Increase base font size for better readability on TV */
+        }
+        .controls {
+            padding: 20px; /* Increased padding */
+            background-color: #1e1e1e;
+            display: flex;
+            gap: 15px; /* Increased gap */
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        .controls label {
+            font-size: 1.1em; /* Increased font size */
+        }
+        .controls input[type="text"] {
+            flex-grow: 1;
+            padding: 12px; /* Increased padding */
+            border: 2px solid #333; /* Slightly thicker border */
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-radius: 5px; /* Slightly larger radius */
+            font-size: 1.1em; /* Increased font size */
+            height: 50px; /* Explicit height for TV */
+        }
+        .controls input[type="text"]:focus {
+            border-color: #55aaff; /* Highlight focus */
+            outline: none; /* Remove default outline */
+            box-shadow: 0 0 5px #55aaff;
+        }
+        .controls button {
+            padding: 12px 25px; /* Increased padding */
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 5px; /* Slightly larger radius */
+            cursor: pointer;
+            font-size: 1.1em; /* Increased font size */
+            height: 50px; /* Explicit height for TV */
+        }
+        .controls button:hover {
+            background-color: #4a4a4a;
+        }
+        .controls button:focus {
+            background-color: #4f4f4f; /* Darker focus for button */
+            outline: 2px solid #55aaff; /* Clear focus outline */
+            outline-offset: 2px;
+        }
+        #recentUrlsContainer {
+            display: none; /* Hidden by default, shown by JS */
+            padding: 10px 20px;
+            background-color: #1e1e1e;
+            flex-direction: column; /* Stack buttons vertically */
+            gap: 10px;
+            align-items: stretch; /* Make buttons take full width available in container */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 9; /* Below controls if both somehow visible */
+        }
+        #recentUrlsContainer button {
+            padding: 15px;
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Slightly smaller than main controls but still large */
+            text-align: left;
+        }
+        #recentUrlsContainer button:hover,
+        #recentUrlsContainer button:focus {
+            background-color: #3a3a3a;
+            border-color: #55aaff;
+            outline: none;
+        }
+        #showControlsBtn {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            padding: 10px 15px;
+            background-color: rgba(58, 58, 58, 0.8);
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            z-index: 20;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #showControlsBtn:hover,
+        #showControlsBtn:focus {
+            background-color: rgba(74, 74, 74, 0.9);
+            border-color: #777;
+            outline: none;
+        }
+        .iframe-container {
+            flex-grow: 1;
+            overflow: hidden; /* Ensures iframe does not cause body scroll */
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="ipAddress">Local URL:</label>
+        <input type="text" id="ipAddress" value="http://192.168.1." placeholder="e.g., http://192.168.1.100:3000">
+        <button onclick="loadSite()">Load</button>
+    </div>
+    <div id="recentUrlsContainer">
+        <!-- Buttons will be added here by JavaScript -->
+    </div>
+    <div class="iframe-container">
+        <iframe id="siteFrame" src="about:blank"></iframe>
+    </div>
+    <button id="showControlsBtn">Show Controls</button>
+
+    <script>
+        const ipInput = document.getElementById('ipAddress');
+        const siteFrame = document.getElementById('siteFrame');
+        const controlsDiv = document.querySelector('.controls');
+        const recentUrlsContainer = document.getElementById('recentUrlsContainer');
+        const showControlsBtn = document.getElementById('showControlsBtn');
+
+        const LAST_TYPED_URL_KEY = 'localSitePreviewLastTypedUrl';
+        const RECENT_SUCCESSFUL_URLS_KEY = 'localSitePreviewRecentSuccessfulUrls';
+        const MAX_RECENT_URLS = 5;
+        const DEFAULT_PLACEHOLDER_URL = "http://192.168.1.";
+
+        let recentSuccessfulUrls = [];
+        let isSiteCurrentlyLoaded = false;
+
+        function isValidHttpUrl(string) {
+            let url;
+            try {
+                url = new URL(string);
+            } catch (_) {
+                return false;
+            }
+            return url.protocol === "http:" || url.protocol === "https:";
+        }
+
+        function saveRecentSuccessfulUrls() {
+            try {
+                localStorage.setItem(RECENT_SUCCESSFUL_URLS_KEY, JSON.stringify(recentSuccessfulUrls));
+            } catch (e) {
+                console.error("Error saving recent URLs to localStorage:", e);
+            }
+        }
+
+        function loadRecentSuccessfulUrls() {
+            try {
+                const storedUrls = localStorage.getItem(RECENT_SUCCESSFUL_URLS_KEY);
+                if (storedUrls) {
+                    recentSuccessfulUrls = JSON.parse(storedUrls);
+                } else {
+                    recentSuccessfulUrls = [];
+                }
+            } catch (e) {
+                console.error("Error loading recent URLs from localStorage:", e);
+                recentSuccessfulUrls = [];
+            }
+        }
+        
+        function addUrlToSuccessfulRecents(url) {
+            if (!url) return;
+            // Remove if already exists to move it to the front
+            recentSuccessfulUrls = recentSuccessfulUrls.filter(u => u !== url);
+            recentSuccessfulUrls.unshift(url); // Add to the beginning
+            if (recentSuccessfulUrls.length > MAX_RECENT_URLS) {
+                recentSuccessfulUrls.length = MAX_RECENT_URLS; // Trim to max size
+            }
+            saveRecentSuccessfulUrls();
+        }
+
+        function renderRecentUrlButtons() {
+            recentUrlsContainer.innerHTML = ''; // Clear existing buttons
+            if (recentSuccessfulUrls.length === 0) {
+                recentUrlsContainer.style.display = 'none';
+                return;
+            }
+
+            recentSuccessfulUrls.forEach(url => {
+                const button = document.createElement('button');
+                button.textContent = url;
+                button.title = `Load ${url}`;
+                button.onclick = () => {
+                    ipInput.value = url;
+                    loadSite();
+                };
+                recentUrlsContainer.appendChild(button);
+            });
+        }
+
+        function updatePageUI() {
+            if (isSiteCurrentlyLoaded) {
+                controlsDiv.style.display = 'none';
+                recentUrlsContainer.style.display = 'none';
+                showControlsBtn.style.display = 'block';
+            } else {
+                controlsDiv.style.display = 'flex';
+                showControlsBtn.style.display = 'none';
+                const currentInput = ipInput.value.trim();
+                if ((currentInput === "" || currentInput === DEFAULT_PLACEHOLDER_URL) && recentSuccessfulUrls.length > 0) {
+                    recentUrlsContainer.style.display = 'flex'; // Use flex for column layout
+                } else {
+                    recentUrlsContainer.style.display = 'none';
+                }
+            }
+        }
+
+        function loadSite() {
+            let urlToLoad = ipInput.value.trim();
+            if (!urlToLoad) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            try {
+                localStorage.setItem(LAST_TYPED_URL_KEY, urlToLoad);
+            } catch (e) {
+                console.error("Error saving last typed URL to localStorage:", e);
+            }
+            
+            let prefixedUrl = urlToLoad;
+            if (!prefixedUrl.startsWith('http://') && !prefixedUrl.startsWith('https://')) {
+                prefixedUrl = 'http://' + prefixedUrl;
+            }
+
+            if (isValidHttpUrl(prefixedUrl)) {
+                siteFrame.onload = () => {
+                    // `prefixedUrl` is the URL that this specific `loadSite` call was trying to load.
+                    // `siteFrame.src` is what actually just finished loading in the iframe.
+
+                    // If 'about:blank' just loaded...
+                    if (siteFrame.src === 'about:blank' || !siteFrame.src) { // Check for empty src too, just in case
+                        // ...and this onload handler was for a *different* URL (e.g., http://foo.com) or if prefixedUrl itself was invalidly about:blank
+                        if (prefixedUrl !== 'about:blank') {
+                            console.log(`iframe.onload: current src is '${siteFrame.src}', but this handler was for ${prefixedUrl}. This is likely a reset or navigation away. Ignoring as site success.`);
+                            // isSiteCurrentlyLoaded should be false if controls are meant to be shown.
+                            // handleShowControlsClick already set it to false.
+                            // An error in loading prefixedUrl would also have set it to false via onerror.
+                            // So, we just return and don't proceed to treat this as a successful load of prefixedUrl.
+                            return; 
+                        } else {
+                            // This case (prefixedUrl IS 'about:blank') should ideally not happen if isValidHttpUrl blocks 'about:blank',
+                            // or if it does, it's an intended load of 'about:blank', not a user site success.
+                            console.log("iframe.onload: 'about:blank' (or empty) loaded, and prefixedUrl was also 'about:blank'. No action.");
+                            return;
+                        }
+                    }
+
+                    // If we reach here, siteFrame.src is not 'about:blank' (or was intended) and it's a real URL load attempt.
+                    // We assume if onerror didn't fire, it's the intended one or a redirect from it.
+                    console.log("Site loaded successfully (intended: ", prefixedUrl, ", actual: ", siteFrame.src, ")");
+                    isSiteCurrentlyLoaded = true;
+                    addUrlToSuccessfulRecents(urlToLoad); // urlToLoad is from the outer scope of loadSite, the user's original input
+                    renderRecentUrlButtons();
+                    updatePageUI(); // This will now correctly hide controls only on actual site success
+                };
+                siteFrame.onerror = () => {
+                    console.error("Error loading site:", prefixedUrl);
+                    alert(`Failed to load site: ${urlToLoad}\\nEnsure the server is running and the URL is correct.`);
+                    siteFrame.src = "about:blank";
+                    isSiteCurrentlyLoaded = false;
+                    updatePageUI();
+                };
+                siteFrame.src = prefixedUrl;
+            } else {
+                alert("Please enter a valid URL (e.g., http://192.168.1.100 or http://localhost:3000).");
+                siteFrame.src = "about:blank";
+                isSiteCurrentlyLoaded = false;
+                updatePageUI();
+            }
+        }
+        
+        function handleShowControlsClick() {
+            isSiteCurrentlyLoaded = false; // No longer considering site loaded
+            siteFrame.src = "about:blank"; // Clear the iframe
+
+            // Pre-fill with the most recent successful URL if input is empty/default
+            if (recentSuccessfulUrls.length > 0 && (ipInput.value.trim() === "" || ipInput.value.trim() === DEFAULT_PLACEHOLDER_URL)) {
+                 ipInput.value = recentSuccessfulUrls[0];
+            }
+            renderRecentUrlButtons(); // Refresh buttons
+            updatePageUI();
+        }
+
+        // Event Listeners
+        showControlsBtn.addEventListener('click', handleShowControlsClick);
+
+        ipInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                loadSite();
+            }
+        });
+        
+        ipInput.addEventListener('input', () => {
+            // If user starts typing, and a site was loaded, treat as wanting to change.
+            if (isSiteCurrentlyLoaded) {
+                // This case is tricky; user typing implies they want to change.
+                // But updatePageUI on its own might not show controls if isSiteCurrentlyLoaded is true.
+                // Let's ensure controls are visible if they start typing.
+                // isSiteCurrentlyLoaded = false; // Or handle this more directly.
+            }
+            // Dynamically show/hide recent URLs container based on input content
+            updatePageUI(); 
+        });
+
+        // Initialization
+        function init() {
+            loadRecentSuccessfulUrls();
+            const lastTypedUrl = localStorage.getItem(LAST_TYPED_URL_KEY);
+
+            if (recentSuccessfulUrls.length > 0) {
+                ipInput.value = recentSuccessfulUrls[0]; // Default to most recent successful
+            } else if (lastTypedUrl && lastTypedUrl !== DEFAULT_PLACEHOLDER_URL) {
+                ipInput.value = lastTypedUrl; // Fallback to last typed
+            } else {
+                ipInput.value = DEFAULT_PLACEHOLDER_URL; // Absolute fallback
+            }
+            
+            renderRecentUrlButtons();
+            updatePageUI();
+
+            // Attempt to auto-load if a non-default URL is in the input
+            const currentInputValue = ipInput.value.trim();
+            if (currentInputValue && currentInputValue !== DEFAULT_PLACEHOLDER_URL && isValidHttpUrl(currentInputValue)) {
+                 // Delay slightly to ensure UI is rendered before potential alert from loadSite
+                setTimeout(loadSite, 100);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
+
