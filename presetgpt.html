@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PresetGPT - Text Presets for ChatGPT</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent: #4a9eff;
+            --pill-bg: #3d3d3d;
+            --pill-hover: #4d4d4d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        textarea {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: none; /* Prevent resizing */
+        }
+
+        textarea:focus {
+            outline: 2px solid var(--accent);
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--accent);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .presets-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preset-pill {
+            background-color: var(--pill-bg);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preset-pill:hover {
+            background-color: var(--pill-hover);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            color: #ff4444;
+        }
+
+        @media (max-width: 600px) {
+            .input-group {
+                flex-direction: column;
+            }
+
+            textarea {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .preset-input {
+            margin-top: 20px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .preset-input textarea {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .preset-input button {
+            width: auto;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PresetGPT</h1>
+        <div class="input-group">
+            <textarea id="userInput" placeholder="Enter your text here..." rows="4"></textarea>
+            <button onclick="processUserInput()">Submit</button>
+        </div>
+        <div class="presets-container" id="presetsContainer"></div>
+        <div class="input-group preset-input">
+            <textarea id="presetInput" placeholder="Add new preset..." rows="2"></textarea>
+            <button onclick="addPreset()">Add Preset</button>
+        </div>
+    </div>
+
+    <script>
+        // Load presets from localStorage on page load
+        let presets = JSON.parse(localStorage.getItem('presets')) || [];
+
+        // Function to save presets to localStorage
+        function savePresets() {
+            localStorage.setItem('presets', JSON.stringify(presets));
+        }
+
+        // Function to add a new preset
+        function addPreset() {
+            const input = document.getElementById('presetInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                presets.push(text);
+                savePresets();
+                input.value = '';
+                renderPresets();
+            }
+        }
+
+        // Function to delete a preset
+        function deletePreset(index) {
+            presets.splice(index, 1);
+            savePresets();
+            renderPresets();
+        }
+
+        // Function to open ChatGPT with preset
+        function openChatGPT(presetText) {
+            const userInput = document.getElementById('userInput');
+            const userText = userInput.value.trim();
+            
+            if (userText) {
+                const formattedText = `${presetText}:\n\n${userText}`;
+                const encodedText = encodeURIComponent(formattedText);
+                window.open(`https://chatgpt.com/?q=${encodedText}`, '_blank');
+            }
+        }
+
+        // Function to render all presets
+        function renderPresets() {
+            const container = document.getElementById('presetsContainer');
+            container.innerHTML = '';
+            
+            presets.forEach((preset, index) => {
+                const pill = document.createElement('div');
+                pill.className = 'preset-pill';
+                pill.innerHTML = `
+                    <span onclick="openChatGPT('${preset.replace(/'/g, "\\'")}')">${preset}</span>
+                    <button class="delete-btn" onclick="deletePreset(${index})">×</button>
+                `;
+                container.appendChild(pill);
+            });
+        }
+
+        // Add new function to handle user input
+        function processUserInput() {
+            const userInput = document.getElementById('userInput');
+            const text = userInput.value.trim();
+            
+            if (text) {
+                const formattedText = `preset:\n\n${text}`;
+                const encodedText = encodeURIComponent(formattedText);
+                window.open(`https://chatgpt.com/?q=${encodedText}`, '_blank');
+            }
+        }
+
+        // Add event listener for Enter key on user input
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processUserInput();
+            }
+        });
+
+        // Initial render
+        renderPresets();
+    </script>
+</body>
+</html>
