@@ -9,7 +9,8 @@
     <meta name="description" content="Explore and discover digital art and NFTs from Objkt.com. Search by tags, view latest creations, and find unique Tezos collectibles.">
 
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" 
+    type="image/svg+xml" href="favicon.svg" />
     <link rel="shortcut icon" href="favicon.ico" />
 
     <!-- Open Graph / Facebook -->
@@ -708,6 +709,10 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
 
                          //  console.log("YY", token);
 
+                // Determine the referral address
+                const urlAddress = getQueryParam('address');
+                const referralAddress = urlAddress || 'tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5';
+
 
                 if (token.fa && token.fa.contract) {
                     contract = token.fa.contract;
@@ -717,10 +722,10 @@ query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_b
                 let assetUrl = '';
                 if (contract && token.token_id) {
               //  assetUrl = `https://objkt.com/${contract}/${token.token_id}`;
-              assetUrl = `https://objkt.com/tokens/${token.fa.contract}/${token.token_id}?ref=tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5`;
+              assetUrl = `https://objkt.com/tokens/${token.fa.contract}/${token.token_id}?ref=${referralAddress}`;
                 } else {
                 //  assetUrl = `https://objkt.com/asset/${token.pk}`;
-                  assetUrl = `https://objkt.com/tokens/${token.fa.contract}/${token.token_id}?ref=tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5`;
+                  assetUrl = `https://objkt.com/tokens/${token.fa.contract}/${token.token_id}?ref=${referralAddress}`;
                 }
                 
                 const itemEl = document.createElement('div');
