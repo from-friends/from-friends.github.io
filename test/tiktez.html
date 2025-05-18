@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTez - Tezos Art Inspiration Feed for Objkt.com</title>
+
+    <!-- SEO and Social Sharing Meta Tags -->
+    <meta name="description" content="Discover Tezos art inspiration with TikTez, an endless feed of NFT artworks from Objkt.com, presented in a TikTok-style swiping interface.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://from-friends.github.io/tiktez.html">
+    <meta property="og:title" content="TikTez - Tezos Art Inspiration Feed for Objkt.com">
+    <meta property="og:description" content="Discover Tezos art inspiration with TikTez, an endless feed of NFT artworks from Objkt.com, presented in a TikTok-style swiping interface.">
+    <meta property="og:image" content="https://from-friends.github.io/tiktez/tiktez-social-media-sharing.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://from-friends.github.io/tiktez.html">
+    <meta property="twitter:title" content="TikTez - Tezos Art Inspiration Feed for Objkt.com">
+    <meta property="twitter:description" content="Discover Tezos art inspiration with TikTez, an endless feed of NFT artworks from Objkt.com, presented in a TikTok-style swiping interface.">
+    <meta property="twitter:image" content="https://from-friends.github.io/tiktez/tiktez-social-media-sharing.png">
+
+    <link rel="icon" type="image/png" href="tiktez/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="tiktez/favicon.svg" />
+<link rel="shortcut icon" href="tiktez/favicon.ico" />
+<!-- <link rel="apple-touch-icon" sizes="180x180" href="/tiktez/apple-touch-icon.png" />
+<link rel="manifest" href="/tiktez/site.webmanifest" /> -->        
+
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            overscroll-behavior-y: contain;
+            overflow: hidden;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        #app-container {
+            height: 100vh;
+            width: 100%;
+            background-color: #000;
+            color: #fff;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+        }
+
+        .card {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: start;
+            position: relative;
+            box-sizing: border-box; /* Ensure padding/border doesn't affect overall size */
+        }
+
+        .card-inner {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            display: flex; /* For centering content if image fails */
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-thumbnail-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .card-thumbnail-default-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: #111827; /* gray-900 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .card-thumbnail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: opacity 300ms;
+            opacity: 1;
+        }
+
+        .card-thumbnail-image-error, .card-thumbnail-loading {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: #1f2937; /* gray-800 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af; /* gray-400 */
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .card-thumbnail-gradient-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.8));
+        }
+
+        .card-content {
+            position: absolute;
+            bottom: 0; /* Adjusted from 10vh for more space */
+            left: 0;
+            right: 0;
+            padding: 1rem 1.5rem; /* p-4 md:p-6 */
+            color: #fff;
+            z-index: 10;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem; /* mb-3 */
+        }
+
+        .card-title-link {
+            color: inherit; 
+            text-decoration: none;
+            transition: color 150ms;
+        }
+        .card-title-link:hover {
+            color: #e5e7eb; /* gray-200 */
+        }
+
+        .card-title {
+            font-size: 1.25rem; /* text-xl md:text-2xl */
+            line-height: 1.75rem;
+            font-weight: 700; 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .card-creator {
+            font-size: 0.875rem; /* text-sm */
+            color: #d1d5db; /* gray-300 */
+            margin-bottom: 0.5rem; /* mb-2 */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+         .card-creator img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+            background-color: #374151; /* gray-700 for placeholder */
+        }
+
+
+        .card-actions {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically */
+            align-items: flex-end; /* Align to the right */
+            gap: 0.75rem; /* gap-3 */
+            position: absolute; /* Position relative to card-content */
+            right: 1.5rem;
+            bottom: calc(10vh + 1.5rem); /* Adjust based on card-content padding and desired position */
+             /* Align with text content, or adjust as needed */
+        }
+
+        .action-button {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%; /* Make them round */
+            padding: 0.75rem; /* p-3 */
+            transition: background-color 0.2s;
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 48px; /* Fixed width */
+            height: 48px; /* Fixed height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .action-button svg { /* Style for potential SVG icons */
+            width: 24px;
+            height: 24px;
+        }
+        .action-button:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        
+        .card-extract { /* For description */
+            color: #e5e7eb; /* gray-200 */
+            margin-bottom: 1rem; /* mb-4 */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4); 
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.4;
+            max-height: calc(1.4em * 3); /* approx 3 lines */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+        }
+
+        .card-objkt-link {
+            display: inline-block;
+            font-size: 0.875rem; 
+            line-height: 1.25rem;
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem; /* rounded-md */
+            text-decoration: none;
+            font-weight: 600; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
+            transition: background-color 150ms;
+        }
+        .card-objkt-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            z-index: 10000;
+            display: flex; /* Will be controlled by JS */
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #loading-logo {
+            width: 80px; /* Adjust size as needed */
+            height: auto;
+            margin-bottom: 1rem;
+        }
+        #load-more-sentinel {
+            height: 1px; /* Minimal height, just for observation */
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container" class="hide-scroll">
+        <!-- Objkt Cards will be injected here by JavaScript -->
+        <div id="load-more-sentinel"></div>
+    </div>
+
+    <div id="loading-overlay" style="display: none;">
+        <img src="./logo.png" alt="Logo" id="loading-logo" />
+        <div class="spinner"></div>
+        Loading...
+    </div>
+
+    <script>
+        const API_URL = 'https://data.objkt.com/v3/graphql';
+        let currentOffset = 0;
+        const itemsPerPage = 15; // Increased from 7 to 15
+        let currentTag = 'digital art'; // Example: Popular tag, can be changed
+        let currentSort = 'TIMESTAMP_DESC'; // Or 'LISTINGS_ACTIVE_PRICE_ASC', etc.
+
+        const appContainer = document.getElementById('app-container');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadMoreSentinel = document.getElementById('load-more-sentinel');
+
+        let isLoading = false;
+        let noMoreData = false;
+        let observer;
+        let isInitialQueryAttempt = true; // New flag
+
+        // Helper: get query param from URL
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        const urlReferralAddress = getQueryParam('ref'); // Or 'address' if you prefer that query param name
+        const referralAddress = urlReferralAddress || 'tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5';
+
+        function formatIpfsUrl(url) {
+            if (!url) return '';
+            if (url.startsWith('ipfs://')) {
+                return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
+            }
+            return url;
+        }
+
+        async function handleShare(data) {
+            let shareUrl;
+            if (data.url) {
+                shareUrl = data.url; // This should already have the referralAddress
+            } else {
+                // Fallback: use current page URL and ensure referralAddress is present
+                const currentPageUrl = new URL(window.location.href);
+                currentPageUrl.searchParams.set('ref', referralAddress); // Adds or updates the 'ref' parameter
+                shareUrl = currentPageUrl.toString();
+            }
+
+            const shareData = {
+                title: data.title || 'Check out this NFT!',
+                text: data.text || 'Found this great artwork on TikTez.',
+                url: shareUrl
+            };
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    await navigator.clipboard.writeText(shareData.url);
+                    alert('Link copied to clipboard!');
+                }
+            } catch (error) {
+                console.error('Error sharing:', error);
+                // Fallback to clipboard copy if navigator.share fails for any reason
+                try {
+                    await navigator.clipboard.writeText(shareData.url);
+                    alert('Link copied to clipboard (fallback)!');
+                } catch (copyError) {
+                    console.error('Error copying to clipboard:', copyError);
+                    alert('Could not share or copy link.');
+                }
+            }
+        }
+        
+        function createObjktCard(token) {
+            const card = document.createElement('div');
+            card.className = "card";
+
+            const creator = token.creators && token.creators.length > 0 ? token.creators[0].holder : {};
+            const creatorName = creator.alias || (creator.address ? `${creator.address.substring(0, 5)}...${creator.address.substring(creator.address.length - 5)}` : 'Unknown');
+            const creatorAvatar = formatIpfsUrl(creator.logo) || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Transparent pixel
+
+            const displayUri = formatIpfsUrl(token.display_uri);
+            const thumbnailUri = formatIpfsUrl(token.thumbnail_uri);
+            const artifactUri = formatIpfsUrl(token.artifact_uri);
+            
+            // Determine image: prefer display_uri, then thumbnail_uri, then artifact_uri if it seems like an image.
+            // A more robust check for artifact_uri image type might be needed.
+            let imageUrl = displayUri || thumbnailUri;
+            if (!imageUrl && artifactUri && (artifactUri.includes('.jpg') || artifactUri.includes('.png') || artifactUri.includes('.gif') || artifactUri.includes('.webp'))) {
+                 imageUrl = artifactUri;
+            }
+            
+            let thumbnailHtml;
+            if (imageUrl) {
+                thumbnailHtml = `
+                    <div class="card-thumbnail-container">
+                        <img
+                            loading="lazy"
+                            src="${imageUrl}"
+                            alt="${token.name || 'NFT Image'}"
+                            class="card-thumbnail-image"
+                            onerror="this.parentElement.innerHTML = '<div class=\\'card-thumbnail-image-error\\'>Image failed to load.</div>';"
+                        />
+                        <div class="card-thumbnail-gradient-overlay"></div>
+                    </div>
+                `;
+            } else {
+                thumbnailHtml = '<div class="card-thumbnail-default-bg"><span>No image available</span></div>';
+            }
+            
+            const objktContract = token.fa && token.fa.contract ? token.fa.contract : null;
+            let objktUrl = '#'; // Default if no valid contract/token_id
+            if (objktContract && token.token_id) {
+                 objktUrl = `https://objkt.com/tokens/${objktContract}/${token.token_id}?ref=${referralAddress}`;
+            } else if (token.pk) { // Fallback for older structures if any, though your example focuses on fa.contract
+                 // This part might need adjustment based on actual token data if fa.contract is missing
+                 // For now, constructing a similar link or a generic one if pk is the only identifier
+                 console.warn('Token missing fa.contract, using pk for link construction (might be inaccurate):', token);
+                 objktUrl = `https://objkt.com/asset/${token.pk}?ref=${referralAddress}`; 
+            }
+
+            // Prepare title for embedding in HTML attribute
+            const safeShareTitle = (token.name || 'Untitled NFT').replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+
+            card.innerHTML = `
+                <div class="card-inner">
+                    ${thumbnailHtml}
+                    <div class="card-content">
+                        <div class="card-header">
+                             <a href="${objktUrl}" target="_blank" rel="noopener noreferrer" class="card-title-link">
+                                <h2 class="card-title">${(token.name || 'Untitled NFT').replace(/</g, '&lt;')}</h2>
+                            </a>
+                        </div>
+                         <div class="card-creator">
+                            <img src="${creatorAvatar}" alt="${creatorName}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; this.style.backgroundColor='#333';" />
+                            <span>${creatorName.replace(/</g, '&lt;')}</span>
+                        </div>
+                        ${token.description ? `<p class="card-extract">${token.description.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+                        <a href="${objktUrl}" target="_blank" rel="noopener noreferrer" class="card-objkt-link">Collect on Objkt.com</a>
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-button" aria-label="Share" onclick="handleShare({ title: '${safeShareTitle}', url: '${objktUrl}' })">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        async function fetchData(retryCount = 0) {
+            if (isLoading || noMoreData) return;
+
+            const fetchStartedWithOffset = currentOffset; // Store offset at start of this fetch
+
+            isLoading = true;
+            if (isInitialQueryAttempt && fetchStartedWithOffset === 0) { // Only show full overlay on very first attempt
+                loadingOverlay.style.display = 'flex';
+            }
+
+            // Re-defining the GraphQL query string with direct backticks
+            const graphqlQuery = `query GetTokensByTag($where: token_bool_exp, $limit: Int, $offset: Int, $order_by: [token_order_by!]) {
+                token(
+                    where: $where
+                    limit: $limit
+                    offset: $offset
+                    order_by: $order_by
+                ) {
+                    pk
+                    name
+                    token_id
+                    description
+                    artifact_uri
+                    display_uri
+                    thumbnail_uri
+                    timestamp
+                    supply
+                    creators {
+                        holder {
+                            alias
+                            address
+                            logo
+                        }
+                    }
+                    fa {
+                        contract
+                    }
+                }
+            }`;
+
+            const sortMap = {
+                'TIMESTAMP_DESC': [{ timestamp: 'desc' }],
+                'TIMESTAMP_ASC': [{ timestamp: 'asc' }],
+            };
+
+            const variables = {
+                where: {
+                    tags: { tag: { name: { _eq: currentTag } } } 
+                },
+                limit: itemsPerPage + 1,
+                offset: currentOffset,
+                order_by: sortMap[currentSort] || [{ timestamp: 'desc' }]
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: graphqlQuery, variables })
+                });
+                const data = await response.json();
+
+                if (data.errors) {
+                    if (data.errors[0].message.toLowerCase().includes('database query error') && retryCount < 1) {
+                        console.warn('Database query error, retrying...');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        fetchData(retryCount + 1);
+                        return;
+                    }
+                    throw new Error(data.errors.map(e => e.message).join(', '));
+                }
+                
+                const tokens = data.data && data.data.token ? data.data.token : [];
+                const hasMore = tokens.length > itemsPerPage;
+                const itemsToRender = hasMore ? tokens.slice(0, itemsPerPage) : tokens;
+
+                if (itemsToRender.length === 0) {
+                    if (isInitialQueryAttempt && fetchStartedWithOffset === 0) {
+                        // Very first attempt for this query yielded nothing.
+                        if(loadMoreSentinel && loadMoreSentinel.parentNode === appContainer) {
+                             appContainer.removeChild(loadMoreSentinel);
+                        }
+                        appContainer.innerHTML = '<div class="card" style="text-align:center; justify-content:center; align-items:center; font-size:1.2em;">No results found for this query.</div>';
+                        noMoreData = true; 
+                        if (observer && loadMoreSentinel) { 
+                            observer.unobserve(loadMoreSentinel);
+                        }
+                    } else {
+                        // A subsequent fetch (or looped fetch from offset 0 after initial success) was empty.
+                        // Don't stop; could be a temporary issue or an empty page in a large dataset.
+                        console.warn("Fetch returned 0 items, but not the initial query attempt or not from offset 0. Will allow observer to retry.");
+                        // If !hasMore was true before this empty fetch, currentOffset might already be 0 for looping.
+                        // If hasMore was true, currentOffset is unchanged, implying an empty page.
+                    }
+                } else {
+                    // We have items to render.
+                    isInitialQueryAttempt = false; // Successfully loaded data for the query.
+                    itemsToRender.forEach(token => {
+                        const cardElement = createObjktCard(token);
+                        appContainer.insertBefore(cardElement, loadMoreSentinel);
+                    });
+                    currentOffset += itemsToRender.length;
+
+                    if (!hasMore) {
+                        // This was the last batch of items in the current traversal of the dataset.
+                        console.log("End of dataset traversal. Resetting offset to loop.");
+                        currentOffset = 0; // Reset to loop for the next fetch trigger.
+                        // noMoreData remains false, allowing the observer to trigger again.
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                if (currentOffset === 0 && loadMoreSentinel) { 
+                    const errorMsgNode = document.createElement('div');
+                    errorMsgNode.className = 'card';
+                    errorMsgNode.style.textAlign = 'center';
+                    errorMsgNode.style.justifyContent = 'center';
+                    errorMsgNode.style.alignItems = 'center';
+                    errorMsgNode.textContent = 'Error loading NFTs. Please try refreshing.';
+                    appContainer.insertBefore(errorMsgNode, loadMoreSentinel);
+                }
+            } finally {
+                isLoading = false;
+                loadingOverlay.style.display = 'none';
+            }
+        }
+        
+        function initIntersectionObserver() {
+            const options = {
+                root: null,
+                rootMargin: '0px 0px 600px 0px', // Corrected to use pixels
+                threshold: 0.1
+            };
+
+            observer = new IntersectionObserver((entries) => { // Removed obs parameter as it's not used
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isLoading && !noMoreData) {
+                        console.log('Sentinel intersecting, fetching more data...');
+                        fetchData();
+                    }
+                });
+            }, options);
+
+            if (loadMoreSentinel) {
+                 observer.observe(loadMoreSentinel);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            initIntersectionObserver();
+        });
+
+    </script>
+
+</body>
+</html> 
