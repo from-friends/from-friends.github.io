@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Install Demo</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F0F0F">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0F0F0F;
+            color: #FFF5E6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background-color: #1A1A1A;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #FF3366; /* Coral Pink from previous palette */
+            margin-bottom: 25px;
+        }
+        h2 {
+            color: #FF6B35; /* Warm Orange */
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #FF3366;
+            color: #FFF5E6;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #FF6B35;
+        }
+        button:disabled {
+            background-color: #555;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        #installPwaBtn {
+            display: none; /* Hidden by default, shown when PWA can be installed */
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        li {
+            background-color: #2A2A2A;
+            border: 1px solid #3A3A3A;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            color: #E07A5F; /* Terracotta */
+        }
+        li::before {
+            content: "✅";
+            margin-right: 10px;
+            color: #FFD700; /* Golden Yellow */
+        }
+        #statusMessage {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Install Our Awesome App!</h1>
+        <p>Click the button below to add this application to your home screen for a native app experience.</p>
+        <button id="installPwaBtn">Install App</button>
+        <div id="statusMessage"></div>
+
+        <h2>PWA Installation Requirements Checklist:</h2>
+        <ul>
+            <li>Served over HTTPS (or localhost for development).</li>
+            <li>Includes a Web App Manifest (manifest.json).</li>
+            <li>Manifest has: short_name or name, icons (at least 192x192 and 512x512), start_url, display (standalone, fullscreen, or minimal-ui).</li>
+            <li>Registers a Service Worker.</li>
+            <li>Service Worker has a fetch event handler (can be basic).</li>
+        </ul>
+    </div>
+
+    <script>
+        const installButton = document.getElementById('installPwaBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI to notify the user they can add to home screen
+            installButton.style.display = 'block';
+            statusMessage.textContent = 'Ready to install!';
+            console.log('`beforeinstallprompt` event was fired.');
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Hide our user interface that shows our A2HS button
+                installButton.style.display = 'none';
+                // Show the prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                try {
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    if (outcome === 'accepted') {
+                        statusMessage.textContent = 'App installed successfully!';
+                    } else {
+                        statusMessage.textContent = 'App installation dismissed.';
+                    }
+                } catch (error) {
+                    console.error('Error during PWA installation prompt:', error);
+                    statusMessage.textContent = 'Error during installation.';
+                }
+                // We\'ve used the prompt, and can\'t use it again, throw it away
+                deferredPrompt = null;
+            } else {
+                statusMessage.textContent = 'Installation not available at this moment.';
+                console.log('Install button clicked, but no deferredPrompt available.');
+            }
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                        statusMessage.textContent = 'Service worker registration failed.';
+                    });
+            });
+        } else {
+            statusMessage.textContent = 'Service workers are not supported by your browser.';
+            console.warn('Service workers not supported.');
+        }
+
+        window.addEventListener('appinstalled', () => {
+            statusMessage.textContent = 'Application installed successfully! (appinstalled event)';
+            console.log('PWA was installed via appinstalled event.');
+            // Hide the install button if it's somehow still visible
+            installButton.style.display = 'none'; 
+        });
+    </script>
+</body>
+</html>
