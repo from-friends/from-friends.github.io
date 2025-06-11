@@ -1,207 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FromFriends | Blockchain Tools for Tezos, Base, Ethereum & Solana</title>
-  <meta name="description"
-    content="FromFriends develops and markets blockchain tools for Tezos, Base, Ethereum, and Solana, including TezTracker, FrameToGo, and BakerMonitor." />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="shortcut icon" href="favicon.ico" />
+    <title>FromFriends™ | Blockchain Tools for Tezos, Base, Ethereum & Solana</title>
+    <meta name="description"
+      content="FromFriends™ develops and markets blockchain tools for Tezos, Base, Ethereum, and Solana, including TezTracker, FrameToGo, and BakerMonitor." />
+  
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="shortcut icon" href="favicon.ico" />
+  
+    <!-- Social Meta Tags (Open Graph) -->
+    <meta property="og:title" content="FromFriends™" />
+    <meta property="og:description"
+      content="We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
+    <meta property="og:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
+    <meta property="og:url" content="https://from-friends.github.io" />
+    <meta property="og:type" content="website" />
+  
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FromFriends™" />
+    <meta name="twitter:description"
+      content="We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
+    <meta name="twitter:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
+    <meta name="twitter:url" content="https://from-friends.github.io" />
 
-  <!-- Social Meta Tags (Open Graph) -->
-  <meta property="og:title" content="FromFriends" />
-  <meta property="og:description"
-    content="We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
-  <meta property="og:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
-  <meta property="og:url" content="https://from-friends.github.io" />
-  <meta property="og:type" content="website" />
+    
+    <style>
+        :root {
+            --background-color: #000;
+            --text-color: #eaeaea;
+            --secondary-text-color: #a0a0a0;
+            --border-color: #333;
+            --accent-color: #FF5722;
+            --card-background: #111;
+        }
 
-  <!-- Twitter Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="FromFriends" />
-  <meta name="twitter:description"
-    content="We specialize in developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
-  <meta name="twitter:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
-  <meta name="twitter:url" content="https://from-friends.github.io" />
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            margin: 0;
+            padding: 1rem;
+            line-height: 1.6;
+        }
 
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
 
-  <style>
-    :root {
-      --bg: #ccc;
-      --fg: #1f1f1f;
-      --accent: #ff007f;
-    }
+        header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
 
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background-color: var(--bg);
-      color: var(--fg);
-      padding: 2rem;
-      text-align: left;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
+        .logo {
+            height: 40px;
+        }
 
-    .container {
-      width: 80%;
-      max-width: 600px;
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
 
-      padding: 20px;
+        ul {
+            list-style: disc;
+            padding-left: 30px;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
 
-    }
+        ul ul {
+            list-style-type: circle;
+            margin-top: 0.5rem;
+            padding-left: 20px;
+        }
 
-    header svg {
-      width: 200px;
-      height: auto;
-      margin-bottom: 2rem;
-      fill: var(--fg);
-    }
+        li {
+            margin-bottom: 1rem;
+        }
 
-    nav {
-      display: flex;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
+        li strong {
+            display: inline;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
 
-    nav a {
-      color: var(--fg);
-      text-decoration: none;
-      font-weight: bold;
-    }
+        li p {
+            color: var(--secondary-text-color);
+            margin: 0;
+        }
 
-    nav a:hover {
-      text-decoration: underline;
-    }
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
 
-    section {
-      max-width: 600px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-    }
+        a:hover {
+            text-decoration: underline;
+        }
 
-    h2 {
-      margin-top: 0;
-    }
+        .description {
+            color: var(--secondary-text-color);
+            margin-bottom: 0.5rem;
+            margin-top: 0.25rem;
+        }
+        
+        .about-text {
+            font-size: 1.1rem;
+            color: var(--secondary-text-color);
+        }
 
+        .tag {
+            display: inline-block;
+            background-color: transparent;
+            color: #666;
+            border: 1px solid #333;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.8rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+            font-weight: 500;
+            vertical-align: middle;
+        }
 
-    a {
-      color: var(--accent);
-    }
+    </style>
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-
-    a[target="_blank"] {
-      color: var(--accent);
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 2rem;
-      font-size: 0.9rem;
-    }
-
-    footer p {
-      margin: 0.5rem 0;
-    }
-  </style>
-
-<script defer src="https://cloud.umami.is/script.js" data-website-id="77f26836-27dd-4d25-b9b0-dcf4cdf4b2b7"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="77f26836-27dd-4d25-b9b0-dcf4cdf4b2b7"></script>    
 </head>
-
 <body>
-  <div class="container">
-    <header>
-      <section id="head">
-        <img src="fromfriends.svg" alt="Logo" height="50" />
-      </section>
-    </header>
 
-    <section id="news">
-      <img src="news.svg" alt="News Icon" height="25" />
-            <p>+ <strong>TikTok for Tezos</strong> (Private Alpha) <br />We're super excited to announce the launch of the private alpha test for our
-        new TikTok-like app on Tezos! 🔥🚀
-        <br />
-        <a href="https://tiktoktezos.netlify.app/" target="_blank">tiktoktezos.netlify.app/</a>
-      </p>
-      <p>+ <strong>Tezos Dev Award, March 2025</strong><br />We're beyond excited to have won the <strong>Tezos Dev
-          Award</strong> again — this time for <a
-          href="https://news.tezoscommons.org/tezos-community-rewards-march-2025-03d5d4f1514f" target="_blank">March
-          2025</a>!</p>
-      <p>+ <strong>Tezos Dev Award, January 2025</strong><br />We're thrilled to announce that we won the <strong>Tezos
-          Dev Award</strong> for <a
-          href="https://medium.com/tezoscommons/tezos-community-rewards-january-2025-365deb2d4cbc"
-          target="_blank">January 2025</a>!</p>
-    </section>
+    <div class="container">
+        <header>
+            <img src="fromfriends.svg" alt="FromFriends Logo" class="logo">
+        </header>
 
-    <section id="tools">
-      <img src="tools.svg" alt="Tools Icon" height="25" />
+        <main>
+            <section id="news">
+                <h2>News</h2>
+                 <ul>
+                    <li>
+                        <strong>TikTok for Tezos — Private Alpha</strong>
+                        <p class="description">We're super excited to announce the launch of the private alpha test for our new TikTok-like app on Tezos!</p>
+                        <a href="https://tiktoktezos.netlify.app/" target="_blank">tiktoktezos.netlify.app</a>
+                    </li>
+                    <li>
+                        <strong>Tezos Dev Award, March 2025</strong>
+                        <p class="description">We're beyond excited to have won the Tezos Dev Award again — this time for <a href="https://news.tezoscommons.org/tezos-community-rewards-march-2025-03d5d4f1514f" target="_blank">March 2025</a>!</p>
+                    </li>
+                    <li>
+                        <strong>Tezos Dev Award, January 2025</strong>
+                        <p class="description">We're thrilled to announce that we won the Tezos Dev Award for <a href="https://medium.com/tezoscommons/tezos-community-rewards-january-2025-365deb2d4cbc" target="_blank">January 2025</a>!</p>
+                    </li>
+                </ul>
+            </section>
 
-      <p>+ <strong>TikTok for Tezos</strong> (Private Alpha)<br />
-      Easily discover and collect amazing digital art on Tezos.<br />
-        <a href="https://tiktoktezos.netlify.app/" target="_blank">tiktoktezos.netlify.app/</a>
-      </p>
+            <section id="tools">
+                <h2>Tools</h2>
+                <ul>
+                    <li>
+                        <strong>TikTok for Tezos — Private Alpha</strong><span class="tag">ꜩ
+                        </span>
+                        <p class="description">Easily discover and collect amazing digital art on Tezos.</p>
+                        <a href="https://tiktoktezos.netlify.app/" target="_blank">tiktoktezos.netlify.app</a>
+                    </li>
+                    <li>
+                        <strong>Objktz</strong><span class="tag">ꜩ</span>
+                        <p class="description">Digital Art Explorer for Objkt.com</p>
+                        <a href="https://from-friends.github.io/objktz.html?search=objkt4objkt" target="_blank">from-friends.github.io/objktz.html</a>
+                    </li>
+                    <li>
+                        <strong>TezTracker</strong><span class="tag">ꜩ</span>
+                        <p class="description">Easily track your Tezos earnings across multiple wallets.</p>
+                        <a href="https://from-friends.github.io/teztracker.html" target="_blank">from-friends.github.io/teztracker.html</a>
+                    </li>
+                    <li>
+                        <strong>FrameToGo — Private Beta</strong><span class="tag">ꜩ</span>
+                        <p class="description">Instantly display your Tezos-based digital art collection on any screen for free.<br><a href="https://x.com/FromFriends__" target="_blank">In private beta. Contact us for an invite.</a></p>
+                    </li>
+                    <li>
+                        <strong>BakerMonitor</strong><span class="tag">ꜩ</span>
+                        <p class="description">Monitor Tezos delegation reward payouts from bakers.</p>
+                        <a href="https://from-friends.github.io/bakermonitor.html" target="_blank">from-friends.github.io/bakermonitor.html</a>
+                    </li>
+                </ul>
+            </section>
+            
+            <section id="contact">
+                <h2>Contact</h2>
+                <ul>
+                    <li>Contact us for collaborations, UI/UX design, app development, or smart contract solutions.
+                        <ul>
+                            <li>
+                                <strong>Email</strong>
+                                <p class="description">Email us at <a href="mailto:heyfromfriends@gmail.com">heyfromfriends@gmail.com</a> or use our <a href="https://forms.gle/ZDr6DK88Vxz1Acdx6" target="_blank">contact form</a>.</p>
+                            </li>
+                            <li>
+                                <strong>DM</strong>
+                                <p class="description">Message us on X/Twitter <a href="https://x.com/FromFriends__" target="_blank">x.com/FromFriends__</a></p>
+                            </li>
+                            <li>
+                                <strong>App Development</strong>
+                                <p class="description">Need an app developed? We build everything from simple utility tools to full-scale applications. <a href="https://forms.gle/oJX2HJjLYzqD7SQU8" target="_blank">Send us your idea!</a></p>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+            
+            <section id="about">
+                <h2>About</h2>
+                <ul>
+                    <li>
+                        FromFriends™ is an award-winning team passionate about digital art and the blockchain space.
+                        We provide user-friendly platforms and expert services in UI/UX design, app development, and smart contracts to bring your ideas to life.
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
 
-      <p>+ <strong>Objktz</strong><br />Digital Art Explorer for Objkt.com<br />
-        <a href="https://from-friends.github.io/objktz.html?search=objkt4objkt"
-          target="_blank">from-friends.github.io/objktz.html</a>
-      </p>
-
-      <p>+ <strong>TezTracker</strong><br />Easily track your Tezos earnings across multiple wallets.<br />
-        <a href="https://from-friends.github.io/teztracker.html"
-          target="_blank">from-friends.github.io/teztracker.html</a>
-      </p>
-
-      <p>+ <strong>FrameToGo</strong> (Private Beta)<br />Instantly display your Tezos-based digital art collection on any screen for
-        free.<br />
-        <a href="https://x.com/FromFriends__" target="_blank">In private beta. Contact us for an invite.</a>
-      </p>
-
-      <p>+ <strong>BakerMonitor</strong><br />Monitor Tezos delegation reward payouts from bakers.<br />
-        <a href="https://from-friends.github.io/bakermonitor.html"
-          target="_blank">from-friends.github.io/bakermonitor.html</a>
-      </p>
-    </section>
-
-    <section id="contactx">
-      <img src="contact.svg" alt="Contact Icon" height="25" />
-      <p>Contact us for collaborations, UI/UX design, app development, or smart contract solutions.</p>
-      <p>+ <strong>Email</strong><br />Email us at <a href="mailto:heyfromfriends@gmail.com"
-          target="_blank">heyfromfriends@gmail.com</a> or use our <a href="https://forms.gle/ZDr6DK88Vxz1Acdx6"
-          target="_blank">contact form</a>.</p>
-      <p>+ <strong>DM</strong><br />Message us on X/Twitter <a href="https://x.com/FromFriends__"
-          target="_blank">x.com/FromFriends__</a></p>
-
-          <p>+ <strong>App Development</strong><br />
-          Need an app developed? 
-          We build everything from simple utility tools to full-scale applications.
-          <a href="https://forms.gle/oJX2HJjLYzqD7SQU8" target="_blank">Send us your idea!</a>
-    </section>
-
-    <section id="about">
-      <img src="about.svg" alt="About Icon" height="25" />
-<p>FromFriends™ is an award-winning team passionate about digital art and the blockchain space.<br />We provide user-friendly platforms and expert services in UI/UX design, app development, and smart contracts to bring your ideas to life.</p>
-    </section>
-
-    <footer>
-      <p><i>&copy; 2025 FromFriends™</i></p>
-      <p>
-        <a href="https://x.com/FromFriends__" target="_blank">Follow us on X / Twitter</a> |
-        <a href="https://objkt.com/@fromfriends" target="_blank">Follow us on Objkt.com</a>
-      </p>
-    </footer>
-  </div>
 </body>
-
-</html>
+</html> 
