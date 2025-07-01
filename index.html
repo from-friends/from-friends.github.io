@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="favicon.ico" />
   
     <!-- Social Meta Tags (Open Graph) -->
-    <meta property="og:title" content="FromFriends™" />
+    <meta property="og:title" content="↗ FromFriends™" />
     <meta property="og:description"
       content="Developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
     <meta property="og:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
@@ -23,7 +23,7 @@
   
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="FromFriends™" />
+    <meta name="twitter:title" content="↗ FromFriends™" />
     <meta name="twitter:description"
       content="Developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
     <meta name="twitter:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
@@ -138,6 +138,38 @@
             vertical-align: middle;
         }
 
+        .news-thumbnail {
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+        }
+        
+        #news li.with-thumbnail {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        #tools .featured-card {
+            list-style-type: none;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-left: -30px;
+            margin-bottom: 2rem;
+        }
+
+        #tools .featured-card .news-thumbnail {
+            width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+
+        #tools .featured-card strong {
+            font-size: 1.5rem;
+        }
+
     </style>
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="77f26836-27dd-4d25-b9b0-dcf4cdf4b2b7"></script>    
@@ -153,9 +185,14 @@
             <section id="news">
                 <h2>News</h2>
                  <ul>
-                    <li>
-                        <strong>EditArt.xyz Genesis Drop</strong>
-                        <p class="description">I'm working on my very first digital art drop! You'll be able to co-create my <a href="https://EditArt.xyz" target="_blank">EditArt.xyz</a> genesis on July 8th!</p>
+                    <li class="with-thumbnail">
+                        <a href="https://EditArt.xyz" target="_blank">
+                            <img src="portfolio/editart-genesis.png" alt="EditArt.xyz Genesis thumbnail" class="news-thumbnail">
+                        </a>
+                        <div>
+                            <strong>EditArt.xyz Genesis Drop</strong>
+                            <p class="description">I'm working on my very first digital art drop! You'll be able to co-create my <a href="https://EditArt.xyz" target="_blank">EditArt.xyz</a> genesis on July 8th!</p>
+                        </div>
                     </li>
                     <li>
                         <strong>Tezos Dev Award, May 2025</strong>
@@ -180,6 +217,16 @@
             <section id="tools">
                 <h2>Tools</h2>
                 <ul>
+                    <li class="featured-card">
+                        <a href="https://from-friends.github.io/teztracker.html" target="_blank">
+                            <img src="portfolio/teztacker.png" alt="TezTracker thumbnail" class="news-thumbnail">
+                        </a>
+                        <div>
+                            <strong>TezTracker</strong><span class="tag">ꜩ</span>
+                            <p class="description">Easily track your Tezos earnings across multiple wallets.</p>
+                            <a href="https://from-friends.github.io/teztracker.html" target="_blank">from-friends.github.io/teztracker.html</a>
+                        </div>
+                    </li>
                     <li>
                         <strong>TikTok for Tezos (Private Alpha)</strong><span class="tag">ꜩ
                         </span>
@@ -190,11 +237,6 @@
                         <strong>Objktz</strong><span class="tag">ꜩ</span>
                         <p class="description">Digital Art Explorer for Objkt.com</p>
                         <a href="https://from-friends.github.io/objktz.html?search=objkt4objkt" target="_blank">from-friends.github.io/objktz.html</a>
-                    </li>
-                    <li>
-                        <strong>TezTracker</strong><span class="tag">ꜩ</span>
-                        <p class="description">Easily track your Tezos earnings across multiple wallets.</p>
-                        <a href="https://from-friends.github.io/teztracker.html" target="_blank">from-friends.github.io/teztracker.html</a>
                     </li>
                     <li>
                         <strong>FrameToGo (Private Beta)</strong><span class="tag">ꜩ</span>
