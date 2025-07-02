@@ -138,10 +138,18 @@
             vertical-align: middle;
         }
 
-        .news-thumbnail {
+        .thumbnail-wrapper {
             width: 100px;
             height: 100px;
             border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .news-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.5);
         }
         
         #news li.with-thumbnail {
@@ -164,6 +172,7 @@
             width: 100%;
             height: auto;
             margin-bottom: 1rem;
+            transform: none;
         }
 
         #tools .featured-card strong {
@@ -186,8 +195,22 @@
                 <h2>News</h2>
                  <ul>
                     <li class="with-thumbnail">
+                        <a href="https://from-friends.github.io/fxtez.html" target="_blank">
+                            <div class="thumbnail-wrapper">
+                                <img src="portfolio/fxtez.png" alt="fx(tez) thumbnail" class="news-thumbnail">
+                            </div>
+                        </a>
+                        <div>
+                            <strong>New Tezos Tool Launched</strong>
+                            <p class="description">fx(tez) lets you instantly check stats of your fxhash Tezos collection.</p>
+                            <a href="https://from-friends.github.io/fxtez.html" target="_blank">from-friends.github.io/fxtez.html</a>
+                        </div>
+                    </li>
+                    <li class="with-thumbnail">
                         <a href="https://EditArt.xyz" target="_blank">
-                            <img src="portfolio/editart-genesis.png" alt="EditArt.xyz Genesis thumbnail" class="news-thumbnail">
+                            <div class="thumbnail-wrapper">
+                                <img src="portfolio/editart-genesis.png" alt="EditArt.xyz Genesis thumbnail" class="news-thumbnail">
+                            </div>
                         </a>
                         <div>
                             <strong>EditArt.xyz Genesis Drop</strong>
@@ -217,6 +240,16 @@
             <section id="tools">
                 <h2>Tools</h2>
                 <ul>
+                    <li class="featured-card">
+                        <a href="https://from-friends.github.io/fxtez.html" target="_blank">
+                            <img src="portfolio/fxtez.png" alt="fx(tez) thumbnail" class="news-thumbnail">
+                        </a>
+                        <div>
+                            <strong>fx(tez)</strong><span class="tag">ꜩ</span>
+                            <p class="description">Instantly check stats of your fxhash Tezos collection.</p>
+                            <a href="https://from-friends.github.io/fxtez.html" target="_blank">from-friends.github.io/fxtez.html</a>
+                        </div>
+                    </li>
                     <li class="featured-card">
                         <a href="https://from-friends.github.io/teztracker.html" target="_blank">
                             <img src="portfolio/teztacker.png" alt="TezTracker thumbnail" class="news-thumbnail">
