@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>FromFriends™ | Blockchain Tools for Tezos, Base, Ethereum & Solana</title>
+    <title>FromFriends™ | Blockchain Tools for Tezos, Etherlink, Base, Ethereum & Solana</title>
     <meta name="description"
-      content="I develop and market blockchain tools for Tezos, Base, Ethereum, and Solana, including TezTracker, FrameToGo, and BakerMonitor." />
+      content="I develop and market blockchain tools for Tezos, Etherlink, Base, Ethereum, and Solana, including TezTracker, FrameToGo, and more." />
   
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
@@ -16,16 +16,16 @@
     <!-- Social Meta Tags (Open Graph) -->
     <meta property="og:title" content="↗ FromFriends™" />
     <meta property="og:description"
-      content="Developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
+      content="Developing and marketing blockchain tools for Tezos, Etherlink, Base, Ethereum, and Solana." />
     <meta property="og:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
     <meta property="og:url" content="https://from-friends.github.io" />
     <meta property="og:type" content="website" />
   
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="↗ FromFriends™" />
+    <meta name="twitter:title" content="↗ Visit FromFriends™" />
     <meta name="twitter:description"
-      content="Developing and marketing blockchain tools for Tezos, Base, Ethereum, and Solana." />
+      content="Developing and marketing blockchain tools for Tezos, Etherlink, Base, Ethereum, and Solana." />
     <meta name="twitter:image" content="https://from-friends.github.io/fromfriends-social-meta-image.png" />
     <meta name="twitter:url" content="https://from-friends.github.io" />
 
@@ -57,7 +57,7 @@
 
         header {
             display: flex;
-            justify-content: flex-start;
+            justify-content: space-between;
             align-items: center;
             padding-bottom: 2rem;
             border-bottom: 1px solid var(--border-color);
@@ -68,12 +68,26 @@
             height: 40px;
         }
 
+        .contact-button {
+            background-color: var(--accent-color);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contact-button:hover {
+            text-decoration: none;
+            opacity: 0.9;
+        }
+
         h2 {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 0.5rem;
             margin-top: 3rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             font-weight: 600;
         }
 
@@ -84,6 +98,19 @@
             margin-bottom: 1rem;
         }
 
+        #news ul {
+            padding-left: 0;
+        }
+
+        #news li {
+            list-style-type: none;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
         ul ul {
             list-style-type: circle;
             margin-top: 0.5rem;
@@ -92,6 +119,17 @@
 
         li {
             margin-bottom: 1rem;
+        }
+
+        #contact .contact-methods {
+            margin-top: 1rem;
+        }
+        #contact .contact-method {
+            margin-bottom: 1rem;
+        }
+        #contact .contact-method strong {
+            font-size: 1.2rem;
+            font-weight: 600;
         }
 
         li strong {
@@ -138,11 +176,24 @@
             vertical-align: middle;
         }
 
-        .thumbnail-wrapper {
+        #news .news-item-with-thumb {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        #news .news-thumb-wrapper {
             width: 100px;
             height: 100px;
             border-radius: 4px;
             overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        #news .news-thumb-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .news-thumbnail {
@@ -152,13 +203,15 @@
             transform: scale(1.5);
         }
         
-        #news li.with-thumbnail {
+        #awards li.with-thumbnail {
             display: flex;
             align-items: flex-start;
             gap: 1rem;
         }
 
-        #tools .featured-card {
+        #tools .featured-card,
+        #generative-art .featured-card,
+        #awards .featured-card {
             list-style-type: none;
             background: var(--card-background);
             border: 1px solid var(--border-color);
@@ -168,15 +221,29 @@
             margin-bottom: 2rem;
         }
 
-        #tools .featured-card .news-thumbnail {
+        #tools .featured-card .news-thumbnail,
+        #generative-art .featured-card .news-thumbnail,
+        #awards .featured-card .news-thumbnail {
             width: 100%;
             height: auto;
             margin-bottom: 1rem;
             transform: none;
         }
 
-        #tools .featured-card strong {
+        #tools .featured-card strong,
+        #generative-art .featured-card strong,
+        #awards .featured-card strong {
             font-size: 1.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                height: 32px;
+            }
+            .contact-button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
         }
 
     </style>
@@ -188,16 +255,40 @@
     <div class="container">
         <header>
             <img src="fromfriends.svg" alt="FromFriends Logo" class="logo">
+            <a href="#contact" class="contact-button">Contact Me</a>
         </header>
 
         <main>
             <section id="news">
                 <h2>News</h2>
                  <ul>
-                    <li class="with-thumbnail">
+                    <li class="news-item-with-thumb">
+                        <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank">
+                            <div class="news-thumb-wrapper">
+                                <img src="portfolio/editart-genesis.png" alt="EditArt.xyz Genesis thumbnail" class="news-thumb-image">
+                            </div>
+                        </a>
+                        <div>
+                            <strong>EditArt.xyz Genesis Drop 'Jackson™'</strong>
+                            <p class="description">My EditArt genesis drop 'Jackson™' is now available! 50 editions, 1 XTZ each.</p>
+                            <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank">View Collection</a>
+                        </div>
+                    </li>
+                    <li class="news-item-with-thumb">
+                        <div class="news-thumb-wrapper">
+                            <img src="portfolio/permalink-news.jpeg" alt="Permalink on Etherlink" class="news-thumb-image">
+                        </div>
+                        <div>
+                            <strong>Generative Art on Etherlink with Permalink</strong>
+                            <p class="description">I'm super excited to announce that I'm bringing generative art to Etherlink with Bruno Formagio.</p>
+                            <p class="description">We're building Permalink, a fully on-chain and easy-to-use platform for minting generative art.</p>
+                            <a href="https://x.com/PermalinkArt" target="_blank">Follow PermalinkArt on X</a>
+                        </div>
+                    </li>
+                    <li class="news-item-with-thumb">
                         <a href="https://from-friends.github.io/fxtez.html" target="_blank">
-                            <div class="thumbnail-wrapper">
-                                <img src="portfolio/fxtez.png" alt="fx(tez) thumbnail" class="news-thumbnail">
+                            <div class="news-thumb-wrapper">
+                                <img src="portfolio/fxtez.png" alt="fx(tez) thumbnail" class="news-thumb-image">
                             </div>
                         </a>
                         <div>
@@ -206,33 +297,10 @@
                             <a href="https://from-friends.github.io/fxtez.html" target="_blank">from-friends.github.io/fxtez.html</a>
                         </div>
                     </li>
-                    <li class="with-thumbnail">
-                        <a href="https://EditArt.xyz" target="_blank">
-                            <div class="thumbnail-wrapper">
-                                <img src="portfolio/editart-genesis.png" alt="EditArt.xyz Genesis thumbnail" class="news-thumbnail">
-                            </div>
-                        </a>
-                        <div>
-                            <strong>EditArt.xyz Genesis Drop</strong>
-                            <p class="description">I'm working on my very first digital art drop! You'll be able to co-create my <a href="https://EditArt.xyz" target="_blank">EditArt.xyz</a> genesis on July 8th!</p>
-                        </div>
-                    </li>
-                    <li>
-                        <strong>Tezos Dev Award, May 2025</strong>
-                        <p class="description">I'm honored to have won the Tezos Dev Award once again, this time for <a href="https://medium.com/tezoscommons/tezos-community-rewards-may-2025-25fbdc9a896b" target="_blank">May 2025</a>!</p>
-                    </li>
                     <li>
                         <strong>TikTok for Tezos (Private Alpha)</strong>
                         <p class="description">I'm super excited to announce the launch of the private alpha test for my new TikTok-like app on Tezos!</p>
                         <a href="https://tiktoktezos.netlify.app/" target="_blank">tiktoktezos.netlify.app</a>
-                    </li>
-                    <li>
-                        <strong>Tezos Dev Award, March 2025</strong>
-                        <p class="description">I'm beyond excited to have won the Tezos Dev Award again — this time for <a href="https://news.tezoscommons.org/tezos-community-rewards-march-2025-03d5d4f1514f" target="_blank">March 2025</a>!</p>
-                    </li>
-                    <li>
-                        <strong>Tezos Dev Award, January 2025</strong>
-                        <p class="description">I'm thrilled to announce that I won the Tezos Dev Award for <a href="https://medium.com/tezoscommons/tezos-community-rewards-january-2025-365deb2d4cbc" target="_blank">January 2025</a>!</p>
                     </li>
                 </ul>
             </section>
@@ -260,49 +328,96 @@
                             <a href="https://from-friends.github.io/teztracker.html" target="_blank">from-friends.github.io/teztracker.html</a>
                         </div>
                     </li>
-                    <li>
+                    <li class="featured-card">
                         <strong>TikTok for Tezos (Private Alpha)</strong><span class="tag">ꜩ
                         </span>
                         <p class="description">Easily discover and collect amazing digital art on Tezos.</p>
                         <a href="https://tiktoktezos.netlify.app/" target="_blank">tiktoktezos.netlify.app</a>
                     </li>
-                    <li>
+                    <li class="featured-card">
                         <strong>Objktz</strong><span class="tag">ꜩ</span>
                         <p class="description">Digital Art Explorer for Objkt.com</p>
                         <a href="https://from-friends.github.io/objktz.html?search=objkt4objkt" target="_blank">from-friends.github.io/objktz.html</a>
                     </li>
-                    <li>
+                    <li class="featured-card">
                         <strong>FrameToGo (Private Beta)</strong><span class="tag">ꜩ</span>
-                        <p class="description">Instantly display your Tezos-based digital art collection on any screen for free.<br><a href="https://x.com/FromFriends__" target="_blank">In private beta. Contact us for an invite.</a></p>
+                        <p class="description">Instantly display your Tezos-based digital art collection on any screen for free.<br><a href="https://x.com/FromFriends__" target="_blank">In private beta. Contact me for an invite.</a></p>
                     </li>
-                    <li>
+                    <!-- <li>
                         <strong>BakerMonitor</strong><span class="tag">ꜩ</span>
                         <p class="description">Monitor Tezos delegation reward payouts from bakers.</p>
                         <a href="https://from-friends.github.io/bakermonitor.html" target="_blank">from-friends.github.io/bakermonitor.html</a>
-                    </li>
+                    </li> -->
                 </ul>
             </section>
             
-            <section id="contact">
-                <h2>Contact</h2>
+            <section id="generative-art">
+                <h2>Generative Art</h2>
                 <ul>
-                    <li>Contact me for collaborations, UI/UX design, app development, or smart contract solutions.
-                        <ul>
-                            <li>
-                                <strong>Email</strong>
-                                <p class="description">Email me at <a href="mailto:heyfromfriends@gmail.com">heyfromfriends@gmail.com</a> or use my <a href="https://forms.gle/ZDr6DK88Vxz1Acdx6" target="_blank">contact form</a>.</p>
-                            </li>
-                            <li>
-                                <strong>DM</strong>
-                                <p class="description">Message me on X/Twitter <a href="https://x.com/FromFriends__" target="_blank">x.com/FromFriends__</a></p>
-                            </li>
-                            <li>
-                                <strong>App Development</strong>
-                                <p class="description">Need an app developed? I build everything from simple utility tools to full-scale applications. <a href="https://forms.gle/oJX2HJjLYzqD7SQU8" target="_blank">Send me your idea!</a></p>
-                            </li>
-                        </ul>
+                    <li class="featured-card">
+                        <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank">
+                            <img src="portfolio/editart-genesis.png" alt="EditArt.xyz Genesis thumbnail" class="news-thumbnail">
+                        </a>
+                        <div>
+                            <strong>Jackson™ – EditArt.xyz Genesis Drop</strong><span class="tag">ꜩ</span>
+                            <p class="description">Co-create my EditArt generative art genesis 'Jackson™'.</p>
+                            <p class="description">Jackson™ has been collected by Arthur Breitman, Jos Vromans, Evan Weinberg, and many other amazing collectors.</p>
+                            <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank">Mint Now on EditArt.xyz</a>
+                        </div>
                     </li>
                 </ul>
+            </section>
+
+            <section id="awards">
+                <h2>Awards & Recognition</h2>
+                <ul>
+                    <li class="featured-card">
+                        <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank">
+                            <img src="portfolio/generative-playground.gif" alt="Generative Playground animation" class="news-thumbnail">
+                        </a>
+                        <div>
+                            <strong>Selected Artist – EditArt “Generative Playground”</strong>
+                            <p class="description">Chosen by EditArt for their Generative Playground series, celebrating bold, experimental generative art on the Tezos blockchain.</p>
+                            <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank">View Collection</a>
+                        </div>
+                    </li>
+                    <li class="featured-card">
+                        <img src="portfolio/tezos-developer-awards.png" alt="Tezos Developer Awards" class="news-thumbnail">
+                        <div>
+                            <strong>Tezos Developer Awards</strong>
+                            <p class="description">Recognized three times with the Tezos Developer Award for creating innovative tools for the Tezos ecosystem.</p>
+                            <p class="description">
+                                <a href="https://medium.com/tezoscommons/tezos-community-rewards-may-2025-25fbdc9a896b" target="_blank">May 2025</a>,
+                                <a href="https://news.tezoscommons.org/tezos-community-rewards-march-2025-03d5d4f1514f" target="_blank">March 2025</a>,
+                                <a href="https://medium.com/tezoscommons/tezos-community-rewards-january-2025-365deb2d4cbc" target="_blank">January 2025</a>
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+            <section id="contact">
+                <h2>Contact</h2>
+                <div class="contact-body">
+                    <p>Want to collaborate or need an app developed? I build everything from simple utility tools to full-scale applications.</p>
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <strong>Email</strong>
+                            <p class="description">Email me at <a href="mailto:heyfromfriends@gmail.com">heyfromfriends@gmail.com</a></p>
+                        </div>
+                        <div class="contact-method">
+                            <strong>X (Twitter)</strong>
+                            <p class="description">Message me on X/Twitter <a href="https://x.com/FromFriends__" target="_blank">x.com/FromFriends__</a></p>
+                        </div>
+                        <div class="contact-method">
+                            <strong>Farcaster</strong>
+                            <p class="description">Find me on Farcaster at <a href="https://farcaster.xyz/fromfriends" target="_blank">farcaster.xyz/fromfriends</a></p>
+                        </div>
+                        <div class="contact-method">
+                            <strong>Objkt</strong>
+                            <p class="description">My art profile on Objkt.com <a href="https://objkt.com/@fromfriends" target="_blank">objkt.com/@fromfriends</a></p>
+                        </div>
+                    </div>
+                </div>
             </section>
             
         </main>
