@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EditArt GIF Generator by FromFriends™</title>
+
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="shortcut icon" href="favicon.ico" />
+  
+    <!-- Social Meta Tags (Open Graph) -->
+    <meta property="og:title" content="↗ EditArt GIF Generator" />
+    <meta property="og:description"
+      content="Create animated GIFs from EditArt NFT collections on the Tezos blockchain. Select your favorite pieces from a series, customize the animation, and download your GIF." />
+    <meta property="og:image" content="https://from-friends.github.io/editart-gg/editart-gg-social-media.png" />
+    <meta property="og:url" content="https://from-friends.github.io/editart-gif-generator.html" />
+    <meta property="og:type" content="website" />
+  
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="↗ Generate EditArt GIFs" />
+    <meta name="twitter:description"
+      content="Create animated GIFs from EditArt NFT collections on the Tezos blockchain. Select your favorite pieces from a series, customize the animation, and download your GIF." />
+    <meta name="twitter:image" content="https://from-friends.github.io/editart-gg/editart-gg-social-media.png" />
+    <meta name="twitter:url" content="https://from-friends.github.io/editart-gif-generator.html" />
+
+    <script 
+        src="editart-gg/gif.min.js"
+        defer>
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .toolbar {
+            background-color: #0a0a0a;
+            border-bottom: 1px solid #27272a;
+            padding: 0.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            margin-bottom: 2rem;
+        }
+
+        .toolbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toolbar-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .toolbar-button {
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toolbar-button:hover:not(:disabled) {
+            background-color: #E64A19;
+            transform: translateY(-1px);
+        }
+
+        .toolbar-button:disabled {
+            background-color: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .header-gif-link {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            line-height: 0;
+        }
+
+        .header-gif {
+            display: block;
+            border-radius: 0.5rem;
+            max-width: 150px;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: #a1a1aa;
+            margin-bottom: 1rem;
+        }
+
+        .contract-address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #71717a;
+            background-color: #18181b;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: inline-block;
+            border: 1px solid #27272a;
+        }
+
+        .contract-input-group {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            width: 90%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .contract-input-group .control-input {
+            flex-grow: 1;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .controls {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 5rem;
+            z-index: 10;
+        }
+
+        .selection-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .selected-count {
+            font-size: 1.125rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: #FF5722;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #E64A19;
+        }
+
+        .btn-primary:disabled {
+            background-color: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #4b5563;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #374151;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #4b5563;
+            color: #a1a1aa;
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background-color: #4b5563;
+            color: white;
+        }
+
+        .btn-outline:disabled {
+            border-color: #374151;
+            color: #6b7280;
+            background-color: transparent;
+            cursor: not-allowed;
+        }
+
+        .gif-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #27272a;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            color: #a1a1aa;
+            font-weight: 500;
+        }
+
+        .control-input {
+            background-color: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            color: #ffffff;
+            font-size: 0.875rem;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #FF5722;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.125rem;
+            color: #a1a1aa;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid #27272a;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #27272a;
+            border-radius: 0.25rem;
+            overflow: hidden;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #FF5722;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            color: #a1a1aa;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .nft-card {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            max-width: 100px;
+            margin: 0 auto;
+        }
+
+        .nft-card:hover {
+            transform: translateY(-2px);
+            border-color: #3f3f46;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .nft-card.selected {
+            border-color: #FF5722;
+            box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2);
+        }
+
+        .selection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 87, 34, 0.1);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .nft-card.selected .selection-overlay {
+            display: flex;
+        }
+
+        .selection-number {
+            background-color: #FF5722;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .nft-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background-color: #09090b;
+        }
+
+        .nft-info {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .nft-token-id {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .error {
+            text-align: center;
+            padding: 3rem;
+            color: #ef4444;
+            background-color: #1f1f1f;
+            border: 1px solid #2a2a2a;
+            border-radius: 0.75rem;
+            margin: 2rem 0;
+        }
+
+        .error-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .retry-button {
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .retry-button:hover {
+            background-color: #E64A19;
+        }
+
+        .gif-preview {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            display: none;
+            position: relative;
+        }
+
+        .gif-preview img {
+            width: 150px;
+            height: 150px;
+            border-radius: 0.5rem;
+            object-fit: cover;
+        }
+
+        .preview-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .download-link {
+            display: inline-block;
+        }
+
+        .open-gif-link {
+            color: #ffffff;
+        }
+
+        .demo-link-container {
+            text-align: center;
+            margin-top: 0.75rem;
+        }
+
+        .btn-text-link {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-text-link:hover {
+            color: #ffffff;
+        }
+
+        .btn-full-width {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .info-view {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.125rem;
+            color: #a1a1aa;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: #a1a1aa;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #ffffff;
+        }
+
+        .modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        #donateModal .modal-content {
+            max-width: 380px;
+            text-align: center;
+        }
+
+        #donateModal .close-btn {
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        #donateModal .profile-card {
+            background-color: #09090b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+            border: 1px solid #27272a;
+        }
+        #donateModal .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+            border: 1px solid #3f3f46;
+        }
+        #donateModal .profile-info {
+            text-align: left;
+        }
+        #donateModal .profile-username {
+            font-weight: 600;
+        }
+        #donateModal .profile-address {
+            font-size: 0.7rem;
+            color: #a1a1aa;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        #donateModal .qr-code-container {
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        #donateModal #qrcode img {
+            display: block;
+            margin: auto;
+        }
+        
+        #donateModal .actions-container {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        #donateModal .action-button {
+            flex: 1;
+        }
+        
+        .footer {
+            border-top: 1px solid #27272a;
+            padding-top: 2rem;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+        }
+        .footer-sections {
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+        .footer-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        .footer-links a {
+            color: #a1a1aa;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+        .footer-logo {
+            height: 30px;
+        }
+    
+            @media (max-width: 768px) {
+                .container {
+                    padding: 0 1rem 1rem;
+                }
+
+                .toolbar-title {
+                    font-size: 1.25rem;
+                }
+
+                .title {
+                    font-size: 1.75rem;
+                }
+
+                .grid {
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                    gap: 1rem;
+                }
+
+                .control-buttons {
+                    justify-content: center;
+                }
+
+                .gif-controls {
+                    grid-template-columns: 1fr;
+                }
+
+                .controls {
+                    top: 8rem;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="toolbar-content">
+            <h1 class="toolbar-title" id="toolbar-title">> EditArt GG</h1>
+            <button class="toolbar-button" id="toolbar-generate-btn" onclick="openGifModal()" disabled>
+                Generate GIF
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <a href="https://www.editart.xyz/series/KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE" target="_blank" rel="noopener noreferrer" class="header-gif-link">
+                <img src="editart-gg/editart-jackson-animation_website_small.gif" alt="EditArt Jackson Animation" class="header-gif">
+            </a>
+            <h2 class="title">> EditArt GIF Generator</h2>
+            <p class="subtitle">Easily create an animated GIF from EditArt drops.</p>
+            <div class="contract-input-group">
+                <input type="text" id="contract-address" class="control-input" value="" placeholder="Enter editart.xyz series link or contract address...">
+                <button class="btn btn-primary" onclick="loadCollection()">Load</button>
+            </div>
+            <div class="demo-link-container">
+                <button class="btn-text-link" onclick="loadDemo()">Try Demo</button>
+            </div>
+        </div>
+
+        <div id="gif-modal" class="modal-container" style="display: none;">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeGifModal()">&times;</button>
+                <h3 style="margin-bottom: 1rem;">GIF Generation Settings</h3>
+                <div class="gif-controls">
+                    <div class="control-group">
+                        <label class="control-label" for="frame-delay">Frame Delay (ms)</label>
+                        <input type="number" id="frame-delay" class="control-input" value="750" min="100" max="2000" step="100">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="gif-width">Width (px)</label>
+                        <input type="number" id="gif-width" class="control-input" value="1080" min="200" max="1920" step="50">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="gif-height">Height (px)</label>
+                        <input type="number" id="gif-height" class="control-input" value="1080" min="200" max="1920" step="50">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="gif-quality">Quality</label>
+                        <select id="gif-quality" class="control-input">
+                            <option value="1" selected>High (Slow)</option>
+                            <option value="5">Medium</option>
+                            <option value="10">Low (Fast)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text" id="progress-text"></div>
+                <div style="margin-top: 1.5rem;">
+                    <button id="modal-create-btn" class="btn btn-primary btn-full-width" onclick="generateGif()">Create GIF</button>
+               </div>
+            </div>
+        </div>
+
+        <div class="selection-info" id="selection-info" style="display: none;">
+            <div class="selected-count" id="selected-count">0 of 0 images selected</div>
+            <div class="control-buttons">
+                <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
+                <button id="clear-selection-btn" class="btn btn-outline" onclick="clearSelection()">Clear Selection</button>
+            </div>
+        </div>
+
+        <div class="gif-preview" id="gif-preview">
+            <button class="close-btn" onclick="document.getElementById('gif-preview').style.display = 'none'">&times;</button>
+            <h3 style="margin-bottom: 1rem;">Your Generated GIF</h3>
+            <img id="gif-result" alt="Generated GIF">
+            <div class="preview-actions">
+                <a class="btn btn-primary download-link" id="download-link" download="editart-jackson-animation.gif">
+                    Download GIF
+                </a>
+                <button class="btn btn-outline donate-button">🫶 Donate</button>
+            </div>
+            <div class="preview-actions">
+                <a id="open-gif-link" class="download-link open-gif-link" target="_blank">Open gif in new tab</a>
+            </div>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            Loading collection...
+        </div>
+
+        <div class="error" id="error" style="display: none;">
+            <div class="error-title">Failed to load collection</div>
+            <p>Unable to fetch data from Objkt.com API</p>
+            <button class="retry-button" onclick="loadCollection()">Try Again</button>
+        </div>
+
+        <div class="grid" id="nft-grid"></div>
+
+        <footer class="footer">
+            <div class="footer-sections">
+                <div class="footer-section">
+                    <a href="https://from-friends.github.io/" target="_blank" rel="noopener noreferrer">
+                        <img src="editart-gg/fromfriends.svg" alt="FromFriends Logo" class="footer-logo">
+                    </a>
+                </div>
+                <div class="footer-section">
+                    <h3>Tezos Tools</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://tiktoktezos.netlify.app/" target="_blank" rel="noopener noreferrer">TikTok for Tezos</a></li>
+                        <li><a href="https://frametogo.netlify.app/" target="_blank" rel="noopener noreferrer">Display your Tezos-based digital art</a></li>
+                        <li><a href="https://from-friends.github.io/objktz.html?search=a&offset=0" target="_blank" rel="noopener noreferrer">Digital art explorer for Objkt.com</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://x.com/FromFriends__" target="_blank" rel="noopener noreferrer">Follow FromFriends on X</a></li>
+                        <li><a href="mailto:heyfromfriends@gmail.com">Email FromFriends</a></li>
+                        <li><a href="https://from-friends.github.io/" target="_blank" rel="noopener noreferrer">FromFriends Website</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support Me</h3>
+                    <ul class="footer-links">
+                        <li><button class="btn btn-primary donate-button">Donate</button></li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="donateModal" class="modal-container" style="display: none;">
+        <div class="modal-content">
+            <button class="close-btn" id="close-donate-modal-btn">&times;</button>
+            <h3 style="margin-bottom: 0.5rem;">Donate</h3>
+            <p style="color: #a1a1aa; font-size: 0.9rem;">Many thanks for your support! 🫶</p>
+            
+            <div class="profile-card">
+                <img src="editart-gg/avatar-placeholder.jpg" alt="Avatar" class="profile-avatar">
+                <div class="profile-info">
+                    <div class="profile-username">fromfriends.tez</div>
+                    <div class="profile-address" id="tezos-address">tz1U49JkLGSUR7JFN5xFoFghNwMXnQtR7Pv5</div>
+                </div>
+            </div>
+
+            <p style="color: #a1a1aa; font-size: 0.9rem; margin-top: 1.5rem; margin-bottom: 0;">Scan the FromFriends Tezos address</p>
+        <br/>
+                <img src="editart-gg/qr-donate.png" alt="QR Code for Tezos address">
+         
+
+            <div class="actions-container">
+                <button id="copy-address-btn" class="btn btn-secondary action-button">Copy Address</button>
+                <a href="https://kukai.app" target="_blank" rel="noopener noreferrer" class="btn btn-outline action-button">
+                    Open Kukai
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            apiBase: 'https://data.objkt.com/v3/graphql/',
+            ipfsGateways: [
+                'https://ipfs.io/ipfs/',
+                'https://cloudflare-ipfs.com/ipfs/',
+                'https://gateway.pinata.cloud/ipfs/',
+                'https://dweb.link/ipfs/',
+                'https://gateway.ipfs.io/ipfs/',
+                'https://jorropo.net/ipfs/'
+            ],
+            gifDefaults: {
+                delay: 750,
+                width: 1080,
+                height: 1080,
+                quality: 1
+            }
+        };
+
+        let allTokens = [];
+        let selectedTokens = [];
+        let elementThatOpenedModal = null;
+
+        const query = `
+            query GetTokens($contract: String!, $offset: Int!, $limit: Int!) {
+                token(
+                    where: {
+                        fa_contract: {_eq: $contract}
+                    }
+                    order_by: {token_id: asc}
+                    offset: $offset
+                    limit: $limit
+                ) {
+                    token_id
+                    name
+                    description
+                    artifact_uri
+                    display_uri
+                    thumbnail_uri
+                    
+                    creators {
+                        creator_address
+                    }
+                    supply
+                }
+            }
+        `;
+
+        async function fetchTokens(contractAddress, offset = 0, limit = 100) {
+            try {
+                const response = await fetch(CONFIG.apiBase, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query,
+                        variables: {
+                            contract: contractAddress,
+                            offset,
+                            limit
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.errors) {
+                    throw new Error(data.errors[0].message);
+                }
+
+                return data.data.token;
+            } catch (error) {
+                console.error('Error fetching tokens:', error);
+                throw error;
+            }
+        }
+
+        async function fetchCollectionInfo(contractAddress) {
+            const faQuery = `
+                query GetFa($contract: String!) {
+                  fa(where: {contract: {_eq: $contract}}) {
+                    name
+                  }
+                }
+            `;
+            try {
+                const response = await fetch(CONFIG.apiBase, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: faQuery,
+                        variables: { contract: contractAddress }
+                    })
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.errors) {
+                    throw new Error(data.errors[0].message);
+                }
+                if (data.data.fa && data.data.fa.length > 0) {
+                    return data.data.fa[0];
+                }
+                return null;
+            } catch (error) {
+                console.error('Error fetching collection info:', error);
+                return null;
+            }
+        }
+
+        async function loadAllTokens(contractAddress) {
+            let offset = 0;
+            const limit = 100;
+            let tokens = [];
+            
+            while (true) {
+                const batch = await fetchTokens(contractAddress, offset, limit);
+                if (!batch) { // handle case where token fetch fails gracefully
+                    break;
+                }
+                tokens = [...tokens, ...batch];
+                
+                if (batch.length < limit) {
+                    break;
+                }
+                
+                offset += limit;
+            }
+            
+            return tokens;
+        }
+
+        function getImageUrl(token) {
+            // Try different IPFS gateways for better reliability
+            const ipfsGateways = CONFIG.ipfsGateways;
+            
+            let imageUri = null;
+            
+            // Prioritize display_uri, then artifact_uri, then thumbnail_uri
+            if (token.display_uri) {
+                imageUri = token.display_uri;
+            } else if (token.artifact_uri && (token.mime_type && token.mime_type.startsWith('image/'))) {
+                imageUri = token.artifact_uri;
+            } else if (token.thumbnail_uri) {
+                imageUri = token.thumbnail_uri;
+            } else if (token.artifact_uri) {
+                imageUri = token.artifact_uri;
+            }
+            
+            if (!imageUri) return null;
+            
+            // Handle different URI formats
+            if (imageUri.startsWith('ipfs://')) {
+                const hash = imageUri.replace('ipfs://', '');
+                return ipfsGateways[0] + hash;
+            } else if (imageUri.startsWith('https://')) {
+                return imageUri;
+            } else {
+                // Assume it's an IPFS hash
+                return ipfsGateways[0] + imageUri;
+            }
+        }
+
+        function toggleTokenSelection(tokenId) {
+            const index = selectedTokens.indexOf(tokenId);
+            if (index > -1) {
+                selectedTokens.splice(index, 1);
+            } else {
+                selectedTokens.push(tokenId);
+            }
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const count = selectedTokens.length;
+            document.getElementById('selected-count').textContent = `${count} of ${allTokens.length} images selected`;
+            document.getElementById('toolbar-generate-btn').disabled = count < 2;
+            document.getElementById('clear-selection-btn').disabled = count === 0;
+
+            // Update card appearances
+            document.querySelectorAll('.nft-card').forEach((card, index) => {
+                const tokenId = allTokens[index].token_id;
+                const selectionIndex = selectedTokens.indexOf(tokenId);
+                const checkbox = card.querySelector('.selection-checkbox');
+                
+                if (selectionIndex > -1) {
+                    card.classList.add('selected');
+                    const overlay = card.querySelector('.selection-overlay');
+                    const number = overlay.querySelector('.selection-number');
+                    number.textContent = selectionIndex + 1;
+                    if (checkbox) checkbox.checked = true;
+                } else {
+                    card.classList.remove('selected');
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
+        }
+
+        function selectAll() {
+            selectedTokens = allTokens.map(token => token.token_id);
+            updateSelectionUI();
+        }
+
+        function clearSelection() {
+            selectedTokens = [];
+            updateSelectionUI();
+        }
+
+        function createNFTCard(token, index) {
+            const card = document.createElement('div');
+            card.className = 'nft-card';
+            
+            const imageUrl = getImageUrl(token);
+            
+            card.innerHTML = `
+                <div style="position: absolute; top: 1rem; left: 1rem; z-index: 10;">
+                    <input type="checkbox" class="selection-checkbox" style="width: 1.5rem; height: 1.5rem; pointer-events: none;">
+                </div>
+                <div class="selection-overlay">
+                    <div class="selection-number">1</div>
+                </div>
+                <img class="nft-image" 
+                     src="${imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMDkwOTBCIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNzE3MTdhIiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD4KPHN2Zz4='}" 
+                     alt="${token.name || `Token #${token.token_id}`}"
+                     loading="lazy"
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMDkwOTBCIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNzE3MTdhIiBmb250LXNpemU9IjE0Ij5JbWFnZSBFcnJvcjwvdGV4dD4KPHN2Zz4='"
+                />
+                <div class="nft-info">
+                    <div class="nft-token-id">#${token.token_id}</div>
+                </div>
+            `;
+
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleTokenSelection(token.token_id);
+            });
+
+            return card;
+        }
+
+        function renderTokens(tokens) {
+            const grid = document.getElementById('nft-grid');
+            grid.innerHTML = '';
+
+            tokens.forEach((token, index) => {
+                const card = createNFTCard(token, index);
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadImage(url) {
+            const ipfsGateways = CONFIG.ipfsGateways;
+            
+            // Try different gateways if the first one fails
+            for (let gateway of ipfsGateways) {
+                try {
+                    let testUrl = url;
+                    
+                    // If it's an IPFS URL, try different gateways
+                    if (url.includes('ipfs.io/ipfs/') || url.includes('ipfs://')) {
+                        const hash = url.split('/ipfs/')[1] || url.replace('ipfs://', '');
+                        testUrl = gateway + hash;
+                    }
+                    
+                    const img = await new Promise((resolve, reject) => {
+                        const image = new Image();
+                        image.crossOrigin = 'anonymous';
+                        
+                        const timeout = setTimeout(() => {
+                            reject(new Error('Timeout loading image'));
+                        }, 30000); // 30 second timeout
+                        
+                        image.onload = () => {
+                            clearTimeout(timeout);
+                            resolve(image);
+                        };
+                        
+                        image.onerror = () => {
+                            clearTimeout(timeout);
+                            reject(new Error('Failed to load image'));
+                        };
+                        
+                        image.src = testUrl;
+                    });
+                    
+                    return img;
+                } catch (error) {
+                    console.warn(`Failed to load from ${gateway}:`, error);
+                    continue;
+                }
+            }
+            
+            throw new Error('Failed to load image from all gateways');
+        }
+
+        function resizeImage(img, width, height) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = width;
+            canvas.height = height;
+            
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            
+            const aspectRatio = img.width / img.height;
+            const targetAspectRatio = width / height;
+            
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (aspectRatio > targetAspectRatio) {
+                drawHeight = height;
+                drawWidth = height * aspectRatio;
+                offsetX = (width - drawWidth) / 2;
+                offsetY = 0;
+            } else {
+                drawWidth = width;
+                drawHeight = width / aspectRatio;
+                offsetX = 0;
+                offsetY = (height - drawHeight) / 2;
+            }
+            
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+            return canvas;
+        }
+
+        function openGifModal() {
+            if (selectedTokens.length < 2) {
+                alert('Please select at least 2 images to create a GIF');
+                return;
+            }
+            document.getElementById('gif-modal').style.display = 'flex';
+            document.getElementById('progress-bar').style.display = 'none';
+            document.getElementById('progress-text').textContent = '';
+            document.getElementById('progress-fill').style.width = '0%';
+        }
+
+        function closeGifModal() {
+            document.getElementById('gif-modal').style.display = 'none';
+        }
+
+        async function generateGif() {
+            if (selectedTokens.length < 2) {
+                alert('Please select at least 2 images to create a GIF');
+                return;
+            }
+
+            const createBtn = document.getElementById('modal-create-btn');
+            createBtn.disabled = true;
+
+            const frameDelay = parseInt(document.getElementById('frame-delay').value);
+            const gifWidth = parseInt(document.getElementById('gif-width').value);
+            const gifHeight = parseInt(document.getElementById('gif-height').value);
+            const quality = parseInt(document.getElementById('gif-quality').value);
+
+            // Show progress
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            progressBar.style.display = 'block';
+            progressText.textContent = 'Loading images...';
+            progressFill.style.width = '0%';
+
+            let workerScriptUrl;
+
+            try {
+                // Load all selected images
+                const selectedTokenData = selectedTokens.map(tokenId => 
+                    allTokens.find(token => token.token_id === tokenId)
+                );
+
+                const images = [];
+                
+                for (let i = 0; i < selectedTokenData.length; i++) {
+                    const token = selectedTokenData[i];
+                    const imageUrl = getImageUrl(token);
+                    
+                    progressText.textContent = `Loading image ${i + 1} of ${selectedTokenData.length}...`;
+                    progressFill.style.width = `${(i / selectedTokenData.length) * 50}%`;
+                    
+                    try {
+                        const img = await loadImage(imageUrl);
+                        const canvas = resizeImage(img, gifWidth, gifHeight);
+                        images.push(canvas);
+                    } catch (error) {
+                        console.warn(`Failed to load image for token ${token.token_id}:`, error);
+                    }
+                }
+
+                if (images.length < 2) {
+                    throw new Error('Not enough images loaded successfully');
+                }
+
+                progressText.textContent = 'Initializing GIF generator...';
+                
+                // Fetch worker script and create a blob URL to bypass CORS issues with file:// protocol
+                const workerScriptResponse = await fetch('editart-gg/gif.worker.js');
+                if (!workerScriptResponse.ok) {
+                    throw new Error('Failed to fetch gif.worker.js');
+                }
+                const workerScriptBlob = await workerScriptResponse.blob();
+                workerScriptUrl = URL.createObjectURL(workerScriptBlob);
+
+                progressText.textContent = 'Generating GIF...';
+                progressFill.style.width = '50%';
+
+                // Create GIF
+                const gif = new GIF({
+                    workers: 2,
+                    quality: quality,
+                    width: gifWidth,
+                    height: gifHeight,
+                    workerScript: workerScriptUrl
+                });
+
+                // Add frames
+                images.forEach(canvas => {
+                    gif.addFrame(canvas, { delay: frameDelay });
+                });
+
+                // Generate and display
+                gif.on('finished', (blob) => {
+                    const url = URL.createObjectURL(blob);
+                    
+                    document.getElementById('gif-result').src = url;
+                    document.getElementById('download-link').href = url;
+                    document.getElementById('open-gif-link').href = url;
+                    document.getElementById('gif-preview').style.display = 'block';
+                    
+                    closeGifModal();
+                    
+                    // Scroll to preview
+                    document.getElementById('gif-preview').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+
+                    createBtn.disabled = false;
+                    if (workerScriptUrl) {
+                        URL.revokeObjectURL(workerScriptUrl);
+                    }
+                });
+
+                gif.on('progress', (progress) => {
+                    progressFill.style.width = `${50 + (progress * 50)}%`;
+                    progressText.textContent = `Generating GIF... ${Math.round(progress * 100)}%`;
+                });
+
+                gif.render();
+
+            } catch (error) {
+                console.error('Error generating GIF:', error);
+                alert('Error generating GIF: ' + error.message);
+                progressBar.style.display = 'none';
+                progressText.textContent = '';
+                createBtn.disabled = false;
+                if (workerScriptUrl) {
+                    URL.revokeObjectURL(workerScriptUrl);
+                }
+            }
+        }
+
+        async function loadCollection() {
+            let contractAddress = document.getElementById('contract-address').value.trim();
+            if (!contractAddress) {
+                return;
+            }
+
+            // Parse KT1 address from URL
+            if (contractAddress.includes('editart.xyz')) {
+                const match = contractAddress.match(/(KT1[a-zA-Z0-9]{33})/);
+                if (match && match[1]) {
+                    contractAddress = match[1];
+                    document.getElementById('contract-address').value = contractAddress;
+                } else {
+                    alert('Could not find a valid KT1 contract address in the URL.');
+                    return;
+                }
+            }
+
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            // Reset for new collection
+            document.getElementById('nft-grid').innerHTML = '';
+            allTokens = [];
+            clearSelection();
+            document.getElementById('gif-preview').style.display = 'none';
+            document.getElementById('toolbar-title').textContent = 'Loading...';
+            document.getElementById('selection-info').style.display = 'none';
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            try {
+                const [collectionInfo, tokens] = await Promise.all([
+                    fetchCollectionInfo(contractAddress),
+                    loadAllTokens(contractAddress)
+                ]);
+                
+                allTokens = tokens;
+                allTokens.sort((a, b) => parseInt(a.token_id, 10) - parseInt(b.token_id, 10));
+                
+                if (collectionInfo && collectionInfo.name) {
+                    document.getElementById('toolbar-title').textContent = collectionInfo.name;
+                } else {
+                    document.getElementById('toolbar-title').textContent = 'EditArt GG';
+                }
+
+                renderTokens(allTokens);
+                updateSelectionUI();
+                loading.style.display = 'none';
+                
+                document.getElementById('selection-info').style.display = 'flex';
+
+                const selectionContainer = document.getElementById('selection-info');
+                const toolbarEl = document.querySelector('.toolbar');
+                const scrollPosition = selectionContainer.getBoundingClientRect().top + window.pageYOffset - toolbarEl.offsetHeight - 10;
+                
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth'
+                });
+            } catch (err) {
+                console.error('Failed to load collection:', err);
+                document.getElementById('toolbar-title').textContent = 'EditArt GG';
+                loading.style.display = 'none';
+                error.style.display = 'block';
+            }
+        }
+
+        function loadDemo() {
+            document.getElementById('contract-address').value = 'KT1MPXUDxZQEUTVYzfmaYiHVDxtDxyko6ExE';
+            loadCollection();
+        }
+
+        // Initialize
+        function initializeApp() {
+            // Set default values from config
+            document.getElementById('frame-delay').value = CONFIG.gifDefaults.delay;
+            document.getElementById('gif-width').value = CONFIG.gifDefaults.width;
+            document.getElementById('gif-height').value = CONFIG.gifDefaults.height;
+            document.getElementById('gif-quality').value = CONFIG.gifDefaults.quality;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const series = urlParams.get('series');
+            if (series) {
+                document.getElementById('contract-address').value = series;
+                loadCollection();
+            } else {
+                updateSelectionUI();
+            }
+
+            // Donate Modal Logic
+            const donateModal = document.getElementById('donateModal');
+            const donateButtons = document.querySelectorAll('.donate-button');
+            const closeDonateModalBtn = document.getElementById('close-donate-modal-btn');
+            const copyAddressBtn = document.getElementById('copy-address-btn');
+            const tezosAddress = document.getElementById('tezos-address').textContent;
+
+            donateButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    donateModal.style.display = 'flex';
+                });
+            });
+
+            closeDonateModalBtn.addEventListener('click', () => {
+                donateModal.style.display = 'none';
+            });
+            
+            copyAddressBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(tezosAddress).then(() => {
+                    const originalText = copyAddressBtn.textContent;
+                    copyAddressBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyAddressBtn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy address: ', err);
+                });
+            });
+
+            // Close modal if clicking outside of it
+            window.addEventListener('click', (event) => {
+                if (event.target === donateModal) {
+                    donateModal.style.display = 'none';
+                }
+            });
+        }
+
+        initializeApp();
+    </script>
+</body>
+</html>
