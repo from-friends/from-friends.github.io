@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .input-container {
+            position: relative;
+            background-color: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #666666;
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 60px;
+            max-height: 300px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .textarea::placeholder {
+            color: #666666;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+            justify-content: flex-start;
+        }
+
+        .feature-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            background-color: #FF5722;
+            border: 1px solid #FF5722;
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 32px;
+            height: 32px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .feature-btn:hover {
+            background-color: #e64a19;
+            border-color: #e64a19;
+        }
+
+        .feature-btn:not(.active) {
+            background-color: #2a2a2a;
+            border-color: #404040;
+        }
+
+        .feature-btn:not(.active):hover {
+            background-color: #3a3a3a;
+            border-color: #555555;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            background-color: #FF5722;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            font-family: inherit;
+        }
+
+        .send-btn:hover {
+            background-color: #e64a19;
+        }
+
+        .send-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        @media (max-width: 640px) {
+            .button-row {
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-container">
+            <textarea 
+                class="textarea" 
+                placeholder="Enter your prompt here..."
+                id="promptInput"
+            ></textarea>
+            
+            <div class="button-row">
+                <button class="feature-btn active" data-feature="google" title="Google AI Studio">
+                    G
+                </button>
+                
+                <button class="feature-btn active" data-feature="claude" title="Claude AI">
+                    C
+                </button>
+                
+                <button class="feature-btn active" data-feature="chatgpt" title="ChatGPT">
+                    CGPT
+                </button>
+                
+                <button class="feature-btn active" data-feature="deepseek" title="DeepSeek">
+                    DS
+                </button>
+            </div>
+            
+            <button class="send-btn" id="sendBtn" title="Open in AI Services">
+                <span>Run</span>
+                <svg viewBox="0 0 24 24">
+                    <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('promptInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const featureBtns = document.querySelectorAll('.feature-btn');
+        
+        // Initialize all AI services as active
+        let activeFeatures = new Set(['google', 'claude', 'chatgpt', 'deepseek']);
+        
+        // AI service URLs
+        const aiUrls = {
+            google: 'https://aistudio.google.com/prompts/new_chat',
+            claude: 'https://claude.ai/new?q=',
+            chatgpt: 'https://chatgpt.com/?q=',
+            deepseek: 'https://chat.deepseek.com'
+        };
+        
+        // Auto-resize textarea
+        function autoResize() {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
+        }
+
+        // Save state to localStorage
+        function saveFeatureState() {
+            try {
+                localStorage.setItem('activeFeatures', JSON.stringify(Array.from(activeFeatures)));
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+                // Fallback to window storage
+                window.featureState = Array.from(activeFeatures);
+            }
+        }
+
+        // Load state from localStorage
+        function loadFeatureState() {
+            try {
+                const saved = localStorage.getItem('activeFeatures');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        activeFeatures = new Set(parsed);
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load from localStorage:', e);
+            }
+            
+            // Fallback to window storage
+            if (window.featureState && Array.isArray(window.featureState)) {
+                activeFeatures = new Set(window.featureState);
+            } else {
+                // Default: all AI services active
+                activeFeatures = new Set(['google', 'claude', 'chatgpt', 'deepseek']);
+            }
+        }
+
+        // Update placeholder text based on active services
+        function updatePlaceholder() {
+            if (activeFeatures.size === 0) {
+                textarea.placeholder = 'Enter your prompt here...';
+            } else {
+                const services = Array.from(activeFeatures).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+                textarea.placeholder = `Enter your prompt for ${services}...`;
+            }
+        }
+
+        // Feature button handling
+        featureBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const feature = this.dataset.feature;
+                
+                if (activeFeatures.has(feature)) {
+                    activeFeatures.delete(feature);
+                    this.classList.remove('active');
+                } else {
+                    activeFeatures.add(feature);
+                    this.classList.add('active');
+                }
+                
+                saveFeatureState();
+                updatePlaceholder();
+            });
+        });
+
+        // Send button functionality
+        sendBtn.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const message = textarea.value.trim();
+            if (message && activeFeatures.size > 0) {
+                console.log('Opening AI services with message:', message);
+                console.log('Active services:', Array.from(activeFeatures));
+                
+                // Copy to clipboard if Google or DeepSeek are selected
+                if (activeFeatures.has('google') || activeFeatures.has('deepseek')) {
+                    navigator.clipboard.writeText(message).then(() => {
+                        console.log('Prompt copied to clipboard');
+                    }).catch(err => {
+                        console.error('Failed to copy to clipboard:', err);
+                        // Fallback for older browsers
+                        try {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = message;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            console.log('Prompt copied to clipboard (fallback method)');
+                        } catch (fallbackErr) {
+                            console.error('Fallback copy failed:', fallbackErr);
+                        }
+                    });
+                }
+                
+                // Open each selected AI service in a new tab
+                activeFeatures.forEach(service => {
+                    if (aiUrls[service]) {
+                        if (service === 'claude' || service === 'chatgpt') {
+                            // For Claude and ChatGPT, append the message as query parameter
+                            window.open(aiUrls[service] + encodeURIComponent(message), '_blank');
+                        } else {
+                            // For other services, open without query parameter
+                            window.open(aiUrls[service], '_blank');
+                        }
+                    }
+                });
+                
+                // Clear textarea after opening services
+                textarea.value = '';
+                autoResize();
+                
+                // Visual feedback
+                sendBtn.style.backgroundColor = '#00aa00';
+                setTimeout(() => {
+                    sendBtn.style.backgroundColor = '#FF5722';
+                }, 200);
+            } else if (activeFeatures.size === 0) {
+                // Show warning if no services selected
+                sendBtn.style.backgroundColor = '#cc0000';
+                setTimeout(() => {
+                    sendBtn.style.backgroundColor = '#FF5722';
+                }, 500);
+            }
+        }
+
+        // Initialize everything
+        textarea.addEventListener('input', autoResize);
+        
+        loadFeatureState();
+        
+        // Update UI to match loaded state
+        featureBtns.forEach(btn => {
+            const feature = btn.dataset.feature;
+            if (activeFeatures.has(feature)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        autoResize();
+        updatePlaceholder();
+    </script>
+</body>
+</html>
