@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootloader.art Code Minifier - bootloader:minifier</title>
+    <script src="bootloader-minifier/terser.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #ededed;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+        }
+
+        .warning {
+            background-color: #2a1f0f;
+            border: 1px solid #4a3f1f;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .warning-content {
+            color: #ffa500;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #a1a1a1;
+            font-size: 1.125rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .panel {
+            background-color: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 300px;
+            background-color: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            color: #ededed;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .textarea:focus {
+            border-color: #FF5722;
+        }
+
+        .textarea::placeholder {
+            color: #666;
+        }
+
+        .controls {
+            background-color: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .controls-grid {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-input {
+            width: 18px;
+            height: 18px;
+            accent-color: #FF5722;
+            cursor: pointer;
+            appearance: none;
+            border: 2px solid #2a2a2a;
+            border-radius: 50%;
+            background-color: #1a1a1a;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .radio-input:hover {
+            border-color: #FF5722;
+        }
+
+        .radio-input:checked {
+            accent-color: #FF5722;
+            border-color: #FF5722;
+            background-color: #FF5722;
+            box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2);
+        }
+
+        .radio-input:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        .radio-label {
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .button {
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .button:hover {
+            background-color: #E64A19;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-secondary {
+            background-color: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #ededed;
+        }
+
+        .button-secondary:hover {
+            background-color: #2a2a2a;
+        }
+
+        .copy-button {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .stats {
+            background-color: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #FF5722;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a1a1a1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .error {
+            background-color: #1a0f0f;
+            border: 1px solid #4a1a1a;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+            color: #ff6b6b;
+            font-size: 14px;
+        }
+
+        .success {
+            background-color: #0f1a0f;
+            border: 1px solid #1a4a1a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #51cf66;
+            font-size: 14px;
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .success.show {
+            opacity: 1;
+        }
+
+        .faq {
+            background-color: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 32px;
+            margin-top: 32px;
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .faq-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ededed;
+        }
+
+        .faq-item {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .faq-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #FF5722;
+            margin-bottom: 12px;
+        }
+
+        .faq-answer {
+            color: #a1a1a1;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .faq-answer strong {
+            color: #ededed;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-grid {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success" id="success-message">Copied to clipboard!</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>bootloader:minifier</h1>
+            <p>Compress your code for bootloader.art and save on minting fees</p>
+        </div>
+
+        <div class="controls">
+            <div class="controls-grid">
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input 
+                            type="radio" 
+                            id="safe-mode" 
+                            name="mode" 
+                            value="safe" 
+                            class="radio-input"
+                            checked
+                        >
+                        <label for="safe-mode" class="radio-label">Safe Mode</label>
+                    </div>
+                    <div class="radio-option">
+                        <input 
+                            type="radio" 
+                            id="max-mode" 
+                            name="mode" 
+                            value="max" 
+                            class="radio-input"
+                        >
+                        <label for="max-mode" class="radio-label">Maximum Compression</label>
+                    </div>
+                </div>
+                
+                <button id="minify-button" class="button">
+                    Minify Code
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Input Code</h2>
+                    <button 
+                        id="paste-button" 
+                        class="button button-secondary copy-button"
+                    >
+                        Paste
+                    </button>
+                </div>
+                <textarea 
+                    id="input-code" 
+                    class="textarea" 
+                    placeholder="Paste your code here..."
+                ></textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Minified Output</h2>
+                    <button 
+                        id="copy-button" 
+                        class="button button-secondary copy-button"
+                        disabled
+                    >
+                        Copy
+                    </button>
+                </div>
+                <textarea 
+                    id="output-code" 
+                    class="textarea" 
+                    placeholder="Minified code will appear here..."
+                    readonly
+                ></textarea>
+                <div id="error-message"></div>
+            </div>
+        </div>
+
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-value" id="original-size">0</div>
+                    <div class="stat-label">Original Size</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="minified-size">0</div>
+                    <div class="stat-label">Minified Size</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="compression-ratio">0%</div>
+                    <div class="stat-label">Compression</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <div class="warning-content">
+                <strong>⚠️ Important:</strong> Always test your minified code thoroughly before using it in production. 
+                Maximum compression mode uses aggressive optimizations that may break certain code patterns.
+            </div>
+        </div>
+
+        <div class="faq">
+            <div class="faq-header">
+                <h2>Frequently Asked Questions</h2>
+            </div>
+            
+            <div class="faq-item">
+                <h3 class="faq-question">Why should I minify my code?</h3>
+                <p class="faq-answer">
+                    Every byte saved makes it less expensive to mint your piece on <strong>bootloader.art</strong>. 
+                    Smaller files mean lower transaction costs and faster loading times for your generative art projects.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">What can you do to keep file size small?</h3>
+                <p class="faq-answer">
+                    Optimize your code by reusing functions, deleting unused code, avoiding redundant imports, 
+                    and using shorter variable names. Then use <strong>bootloader:minifier</strong> for final compression 
+                    to achieve maximum file size reduction.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">What technology does bootloader:minifier use?</h3>
+                <p class="faq-answer">
+                    <strong>bootloader:minifier</strong> uses <strong>Terser</strong> under the hood - 
+                    the industry-standard JavaScript minifier. Terser is the same tool used by major bundlers 
+                    like Webpack, Rollup, and Vite to optimize production JavaScript code.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">What's the difference between Safe Mode and Maximum Compression?</h3>
+                <p class="faq-answer">
+                    <strong>Safe Mode</strong> applies conservative optimizations that preserve code behavior. 
+                    <strong>Maximum Compression</strong> uses aggressive optimizations that may break code 
+                    relying on specific JavaScript behaviors - always test thoroughly when using this mode.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Will minification break my code?</h3>
+                <p class="faq-answer">
+                    Safe Mode rarely breaks code, but Maximum Compression can break code that uses dynamic property 
+                    access, relies on function names, or depends on specific JavaScript behaviors. 
+                    Always test your minified code before deploying.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputCode = document.getElementById('input-code');
+        const outputCode = document.getElementById('output-code');
+        const minifyButton = document.getElementById('minify-button');
+        const copyButton = document.getElementById('copy-button');
+        const pasteButton = document.getElementById('paste-button');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const stats = document.getElementById('stats');
+        const originalSizeEl = document.getElementById('original-size');
+        const minifiedSizeEl = document.getElementById('minified-size');
+        const compressionRatioEl = document.getElementById('compression-ratio');
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function showSuccess() {
+            successMessage.classList.add('show');
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 2000);
+        }
+
+        function getMinifyOptions() {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            
+            if (mode === 'safe') {
+                return {
+                    compress: {
+                        drop_console: false,
+                        drop_debugger: false,
+                        dead_code: true,
+                        unused: true,
+                        collapse_vars: true,
+                        reduce_vars: true,
+                        passes: 1
+                    },
+                    mangle: true,
+                    format: {
+                        comments: false
+                    }
+                };
+            } else {
+                return {
+                    compress: {
+                        drop_console: true,
+                        drop_debugger: true,
+                        dead_code: true,
+                        unused: true,
+                        collapse_vars: true,
+                        reduce_vars: true,
+                        inline: 3,
+                        pure_getters: true,
+                        passes: 3,
+                        unsafe: true,
+                        unsafe_arrows: true,
+                        unsafe_comps: true,
+                        unsafe_Function: true,
+                        unsafe_math: true,
+                        unsafe_symbols: true,
+                        unsafe_methods: true,
+                        unsafe_proto: true,
+                        unsafe_regexp: true,
+                        unsafe_undefined: true,
+                        evaluate: true,
+                        hoist_funs: true,
+                        hoist_props: true,
+                        hoist_vars: true,
+                        if_return: true,
+                        join_vars: true,
+                        loops: true,
+                        negate_iife: true,
+                        properties: true,
+                        sequences: true,
+                        side_effects: true,
+                        switches: true,
+                        typeofs: true,
+                        booleans: true,
+                        conditionals: true,
+                        comparisons: true
+                    },
+                    mangle: {
+                        toplevel: true,
+                        eval: true
+                    },
+                    format: {
+                        comments: false,
+                        beautify: false,
+                        semicolons: false,
+                        braces: false,
+                        ascii_only: true
+                    }
+                };
+            }
+        }
+
+        async function minifyCode() {
+            const code = inputCode.value.trim();
+            
+            if (!code) {
+                errorMessage.innerHTML = '<div class="error">Please enter some JavaScript code to minify.</div>';
+                return;
+            }
+
+            errorMessage.innerHTML = '';
+            minifyButton.disabled = true;
+            minifyButton.textContent = 'Minifying...';
+
+            try {
+                const options = getMinifyOptions();
+                const result = await Terser.minify(code, options);
+                
+                if (result.error) {
+                    throw result.error;
+                }
+
+                outputCode.value = result.code;
+                copyButton.disabled = false;
+
+                // Update stats
+                const originalSize = new Blob([code]).size;
+                const minifiedSize = new Blob([result.code]).size;
+                const compressionRatio = Math.round((1 - minifiedSize / originalSize) * 100);
+
+                originalSizeEl.textContent = formatBytes(originalSize);
+                minifiedSizeEl.textContent = formatBytes(minifiedSize);
+                compressionRatioEl.textContent = compressionRatio + '%';
+                
+                stats.style.display = 'block';
+
+            } catch (error) {
+                errorMessage.innerHTML = `<div class="error">Minification failed: ${error.message}</div>`;
+                outputCode.value = '';
+                copyButton.disabled = true;
+                stats.style.display = 'none';
+            } finally {
+                minifyButton.disabled = false;
+                minifyButton.textContent = 'Minify Code';
+            }
+        }
+
+        function copyToClipboard() {
+            outputCode.select();
+            outputCode.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showSuccess();
+            } catch (err) {
+                // Fallback for modern browsers
+                navigator.clipboard.writeText(outputCode.value).then(() => {
+                    showSuccess();
+                }).catch(() => {
+                    alert('Failed to copy to clipboard');
+                });
+            }
+        }
+
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                inputCode.value = text;
+                if (text.trim()) {
+                    minifyCode();
+                }
+                inputCode.focus();
+            } catch (err) {
+                // Fallback for older browsers or permission denied
+                inputCode.focus();
+                alert('Please paste your code manually using Ctrl+V');
+            }
+        }
+
+        // Event listeners
+        minifyButton.addEventListener('click', minifyCode);
+        copyButton.addEventListener('click', copyToClipboard);
+        pasteButton.addEventListener('click', pasteFromClipboard);
+
+        // Auto-minify on input change (debounced)
+        let timeout;
+        inputCode.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if (inputCode.value.trim()) {
+                    minifyCode();
+                } else {
+                    outputCode.value = '';
+                    copyButton.disabled = true;
+                    stats.style.display = 'none';
+                    errorMessage.innerHTML = '';
+                }
+            }, 1000);
+        });
+
+        // Handle Enter key in textarea
+        inputCode.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                minifyCode();
+            }
+        });
+    </script>
+</body>
+</html>
