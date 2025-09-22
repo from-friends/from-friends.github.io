@@ -541,7 +541,9 @@
                         reduce_vars: true,
                         passes: 1
                     },
-                    mangle: true,
+                    mangle: {
+                        reserved: ['BTLDR']
+                    },
                     format: {
                         comments: false
                     }
@@ -587,7 +589,8 @@
                     },
                     mangle: {
                         toplevel: true,
-                        eval: true
+                        eval: true,
+                        reserved: ['BTLDR']
                     },
                     format: {
                         comments: false,
