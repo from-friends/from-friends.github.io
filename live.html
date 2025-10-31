@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time objkt.com Events</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+        #status-bar {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .status-connecting { background-color: #4a3d0b; color: #ffd966; }
+        .status-connected { background-color: #1e4d2b; color: #a7f3d0; }
+        .status-disconnected { background-color: #5c2121; color: #fca5a5; }
+        .status-polling { background-color: #1e3a8a; color: #93c5fd; }
+        #listings-log {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .listing-card {
+            background-color: #2b2b2b;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .listing-card p {
+            margin: 5px 0;
+        }
+        .listing-card strong {
+            color: #bb86fc;
+        }
+        .listing-card code {
+            background-color: #3a3a3a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        .listing-card a {
+            color: #03dac6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .listing-card a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            background-color: #5c2121;
+            border: 1px solid #dc2626;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #fca5a5;
+        }
+        .retry-button {
+            background-color: #1e40af;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .retry-button:hover {
+            background-color: #1d4ed8;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+    <!-- Cast Debug Logger -->
+    <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>Real-Time objkt.com Events</h1>
+        <div id="status-bar" class="status-connecting">Initializing...</div>
+        <div id="error-container"></div>
+
+        <h2>Listings & Sales</h2>
+        <div id="listings-log">
+            <!-- New listings will be added here by JavaScript -->
+        </div>
+
+        <h2 style="margin-top: 40px;">Mints</h2>
+        <div id="mints-log">
+            <!-- New mints will be added here by JavaScript -->
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const context = cast.framework.CastReceiverContext.getInstance();
+            const playerManager = context.getPlayerManager();
+
+            // Debug Logger
+            const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
+            const LOG_TAG = 'ArtCastReceiver';
+
+            castDebugLogger.setEnabled(true);
+            castDebugLogger.loggerLevelByTags = {
+                [LOG_TAG]: cast.framework.LoggerLevel.DEBUG,
+            };
+
+            const namespace = 'urn:x-cast:com.google.cast.sample.artcast';
+            context.addCustomMessageListener(namespace, (customEvent) => {
+                castDebugLogger.info(LOG_TAG, `Message from sender: ${JSON.stringify(customEvent.data)}`);
+                // You can handle messages from the sender here.
+                // For example, you could change the contract address to watch.
+            });
+
+            context.start({
+                statusText: "ArtCast Receiver is ready."
+            });
+
+            context.addEventListener(cast.framework.system.EventType.READY, () => {
+                castDebugLogger.info(LOG_TAG, 'Receiver is ready.');
+                // Start the main application logic once the receiver is ready
+                connect();
+            });
+
+             context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (event) => {
+                castDebugLogger.info(LOG_TAG, `Sender connected: ${event.senderId}`);
+            });
+
+            context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, (event) => {
+                castDebugLogger.info(LOG_TAG, `Sender disconnected: ${event.senderId}`);
+                // If the last sender disconnects, you might want to stop the app.
+                if (context.getSenders().length === 0) {
+                    // window.close(); // This will close the receiver app
+                }
+            });
+        });
+
+        // --- Configuration ---
+        const TZKT_API_URL = "https://api.tzkt.io/v1/events";
+        const OBJKT_MARKETPLACE_CONTRACT = "KT1WvzYHCNBvDSdwafTHv7nJ1dWmZ8GCYuuC";
+        // Entrypoints to monitor on the marketplace contract
+        const MARKETPLACE_ENTRYPOINTS = ["ask", "fulfill_ask", "bid", "fulfill_bid", "retract_ask", "retract_bid"];
+        const MINT_ENTRYPOINT = "mint";
+
+
+        // --- DOM Element References ---
+        const statusBar = document.getElementById('status-bar');
+        const listingsLog = document.getElementById('listings-log');
+        const errorContainer = document.getElementById('error-container');
+        const mintsLog = document.getElementById('mints-log');
+
+        // --- SignalR Logic ---
+        let connection;
+
+        async function connect() {
+            updateStatus('Connecting...', 'status-connecting');
+            
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl(TZKT_API_URL)
+                .withAutomaticReconnect()
+                .build();
+
+            connection.onreconnecting(error => {
+                console.warn(`Connection lost due to error "${error}". Reconnecting.`);
+                updateStatus('Reconnecting...', 'status-connecting');
+            });
+
+            connection.onreconnected(connectionId => {
+                console.log(`Connection re-established. Connected with connectionId "${connectionId}".`);
+                updateStatus('Connected to TzKT WebSocket', 'status-connected');
+            });
+
+            connection.onclose(error => {
+                console.error(`Connection closed. ${error ? `Error: ${error}` : ''}`);
+                updateStatus('Disconnected. Will attempt to reconnect automatically...', 'status-disconnected');
+            });
+
+            connection.on('operations', (msg) => {
+                try {
+                    if (msg.type === 1 && msg.data) {
+                        msg.data.forEach(op => {
+                            if (op.type !== "transaction" || op.status !== "applied") {
+                                return;
+                            }
+
+                            // Marketplace Events (List, Sale, etc.)
+                            if (
+                                op.target?.address === OBJKT_MARKETPLACE_CONTRACT &&
+                                MARKETPLACE_ENTRYPOINTS.includes(op.parameter?.entrypoint)
+                            ) {
+                                console.log("New Marketplace Event:", op);
+                                displayMarketplaceEvent(op);
+                            }
+
+                            // Mint Events
+                            if (op.parameter?.entrypoint === MINT_ENTRYPOINT) {
+                                console.log("New Mint Detected:", op);
+                                displayNewMint(op);
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error processing message:", e, msg);
+                }
+            });
+
+            try {
+                await connection.start();
+                console.log("SignalR Connection successful!");
+                updateStatus('Connected to TzKT WebSocket', 'status-connected');
+
+                // Subscribe to Marketplace
+                await connection.invoke("SubscribeToOperations", {
+                    address: OBJKT_MARKETPLACE_CONTRACT,
+                    types: "transaction"
+                });
+                console.log(`Subscribed to marketplace contract: ${OBJKT_MARKETPLACE_CONTRACT}`);
+                
+                // Subscribe to Mints
+                await connection.invoke("SubscribeToOperations", {
+                    entrypoint: MINT_ENTRYPOINT,
+                    types: "transaction"
+                });
+                console.log(`Subscribed to all '${MINT_ENTRYPOINT}' operations.`);
+
+
+            } catch (err) {
+                console.error("SignalR Connection failed: ", err);
+                updateStatus('Connection failed. Retrying in 5 seconds...', 'status-disconnected');
+                setTimeout(connect, 5000);
+            }
+        }
+
+        // --- UI Update Functions ---
+        function updateStatus(text, className) {
+            statusBar.textContent = text;
+            statusBar.className = '';
+            statusBar.classList.add('status-bar', className);
+        }
+
+        function showError(message, isPermanent = false) {
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    ⚠️ ${message}
+                    ${!isPermanent ? '<button class="retry-button" onclick="retryConnection()">Retry Connection</button>' : ''}
+                </div>
+            `;
+        }
+
+        function clearError() {
+            errorContainer.innerHTML = '';
+        }
+
+        function retryConnection() {
+            connect();
+        }
+
+        function displayMarketplaceEvent(op) {
+            try {
+                const entrypoint = op.parameter?.entrypoint;
+                let title = `✅ New Event: ${entrypoint}`;
+                let details = '';
+                const seller = op.sender.address;
+                const timestamp = new Date(op.timestamp).toLocaleString();
+                const tzktUrl = `https://tzkt.io/${op.hash}`;
+                let objktUrl = `https://objkt.com/tx/${op.hash}`; // Default to transaction link
+
+                switch(entrypoint) {
+                    case 'ask':
+                        title = '✅ New Listing';
+                        const askParams = op.parameter.value;
+                        const priceMutez = parseInt(askParams.price);
+                        const priceTez = priceMutez / 1_000_000;
+                        const fa2Contract = askParams.token.address;
+                        const tokenId = askParams.token.token_id;
+                        objktUrl = `https://objkt.com/asset/${fa2Contract}/${tokenId}`; // More specific link
+                        details = `
+                            <p><strong>Seller:</strong> <code>${seller}</code></p>
+                            <p><strong>Price:</strong> ${priceTez.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} tez</p>
+                        `;
+                        break;
+                    case 'fulfill_ask':
+                        title = '🔥 Sale';
+                         details = `
+                            <p><strong>Buyer:</strong> <code>${seller}</code></p>
+                            <p>A listing was fulfilled.</p>
+                        `;
+                        break;
+                    default:
+                        // Generic display for other entrypoints
+                        details = `<p><strong>Sender:</strong> <code>${seller}</code></p>`;
+                        break;
+                }
+
+                const card = document.createElement('div');
+                card.classList.add('listing-card');
+                card.innerHTML = `
+                    <p><strong>${title}</strong> <small>${timestamp}</small></p>
+                    ${details}
+                     <p>
+                        <a href="${objktUrl}" target="_blank" rel="noopener noreferrer">View on objkt.com</a> |
+                        <a href="${tzktUrl}" target="_blank" rel="noopener noreferrer">View on TzKT</a>
+                    </p>
+                `;
+                
+                listingsLog.prepend(card);
+                
+                if (listingsLog.children.length > 50) {
+                    listingsLog.removeChild(listingsLog.lastChild);
+                }
+            } catch (e) {
+                console.error("Failed to parse and display marketplace event:", e, op);
+            }
+        }
+
+        function displayNewMint(op) {
+             try {
+                const minter = op.sender.address;
+                const contract = op.target.address;
+                const timestamp = new Date(op.timestamp).toLocaleString();
+                const tzktUrl = `https://tzkt.io/${op.hash}`;
+                let objktUrl = `https://objkt.com/tx/${op.hash}`; // Default to tx link
+
+                // Try to find token_id to build a direct asset link
+                const tokenId = op.parameter?.value?.token_id;
+                if (tokenId !== undefined) {
+                    objktUrl = `https://objkt.com/asset/${contract}/${tokenId}`;
+                }
+                
+                const card = document.createElement('div');
+                card.classList.add('listing-card');
+                card.innerHTML = `
+                    <p><strong>🌱 New Mint!</strong> <small>${timestamp}</small></p>
+                    <p><strong>Minter:</strong> <code>${minter}</code></p>
+                    <p><strong>Contract:</strong> <code>${contract}</code></p>
+                     <p>
+                        <a href="${objktUrl}" target="_blank" rel="noopener noreferrer">View on objkt.com</a> |
+                        <a href="${tzktUrl}" target="_blank" rel="noopener noreferrer">View on TzKT</a>
+                     </p>
+                `;
+                
+                mintsLog.prepend(card);
+                
+                if (mintsLog.children.length > 50) {
+                    mintsLog.removeChild(mintsLog.lastChild);
+                }
+            } catch (e) {
+                console.error("Failed to parse and display mint:", e, op);
+            }
+        }
+        
+        // --- Initial Call ---
+        // We will now call connect() when the cast receiver is ready.
+        // document.addEventListener('DOMContentLoaded', connect);
+    </script>
+</body>
+</html>
