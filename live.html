@@ -116,6 +116,27 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Check if the receiver is running on a real Chromecast device.
+            // The Chromecast user agent contains the string 'CrKey'.
+            if (!/CrKey/.test(navigator.userAgent)) {
+                document.body.innerHTML = `
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; text-align: center; font-family: sans-serif;">
+                        <div style="max-width: 600px; padding: 20px;">
+                            <h1 style="color: #FF5722;">This is a Chromecast Receiver</h1>
+                            <p style="font-size: 1.2em;">This page is not meant to be opened directly in your browser.</p>
+                            <p>To view this application, you must launch it from the sender page on a real Chromecast device.</p>
+                            <p style="margin-top: 30px; font-size: 1.1em;">
+                                1. Make sure your local server is running.<br/>
+                                2. Open <strong style="color: #FF5722;">sender.html</strong> in your Chrome browser.<br/>
+                                3. Click the Cast icon and select your device.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                // Stop the script to prevent errors.
+                return;
+            }
+
             const context = cast.framework.CastReceiverContext.getInstance();
             const playerManager = context.getPlayerManager();
 
