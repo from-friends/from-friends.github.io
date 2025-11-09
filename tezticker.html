@@ -754,24 +754,14 @@
 
         function castWithDebug() {
             const castContext = cast.framework.CastContext.getInstance();
-            let session = castContext.getCurrentSession();
-            
-            const sendMessage = (session) => {
-                console.log('Sending debug message to receiver.');
-                session.sendMessage('urn:x-cast:com.google.cast.sample.artcast', { showDebugInfo: true });
-            };
-
-            if (session) {
-                sendMessage(session);
-            } else {
-                castContext.requestSession()
-                    .then(newSession => {
-                        sendMessage(newSession);
-                    })
-                    .catch(error => {
-                        console.error('Error starting cast session for debug', error);
-                    });
-            }
+            castContext.requestSession()
+                .then(session => {
+                    console.log('Sending debug message to receiver.');
+                    session.sendMessage('urn:x-cast:com.google.cast.sample.artcast', { showDebugInfo: true });
+                })
+                .catch(error => {
+                    console.error('Error starting cast session for debug', error);
+                });
         }
 
         document.getElementById('debug-receiver-btn').addEventListener('click', castWithDebug);
