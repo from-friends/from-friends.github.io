@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artvent by FromFriends™</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #ededed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            transition: background-color 0.5s ease;
+        }
+
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        iframe.loaded {
+            opacity: 1;
+        }
+
+        .message-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+            display: none;
+            /* Hidden by default */
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <iframe id="artwork-frame" title="Daily Artwork" allow="fullscreen; autoplay" allowfullscreen></iframe>
+
+    <div id="message" class="message-container">
+        <h1>No artwork scheduled for today.</h1>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+
+        // Set this to a date string 'YYYY-MM-DD' to test a specific date, or null to use real time.
+        // Example: '2025-12-01'
+        // You can also use URL parameter: ?day=01 (or any day 1-19)
+        const DEBUG_DATE = null;
+
+        // Check for URL parameter override
+        function getDayFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dayParam = urlParams.get('day');
+            if (dayParam) {
+                const day = parseInt(dayParam, 10);
+                if (day >= 1 && day <= 19) {
+                    return day;
+                }
+            }
+            return null;
+        }
+
+        // Define your artworks here.
+        // day: The day of the month (1-24) for December 2025.
+        // url: The URL of the artwork to load.
+        // backgroundColor: The background color for the page container.
+        const ARTWORKS = [
+            {
+                day: 1,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmTQn5FefPrLXtbDepLbMRYBLVMcD9N4jpnNSb6KsVvjgD/?cid=QmTQn5FefPrLXtbDepLbMRYBLVMcD9N4jpnNSb6KsVvjgD&fxhash=opVRUJQmSRa6k9dR6YW4svhy4FgxiKJATy5qwzkw2Ka5mDNvVQR&fxminter=tz1N1vuWBsDtGMyj3No8NfeJdCBFu8v6gvSX&fxiteration=12&fxcontext=standalone&fxchain=TEZOS&legacy=false',
+                backgroundColor: '#1a1a1a',
+                title: 'tr4ns4ctions',
+                artist: 'Kim Asendorf'
+            },
+            {
+                day: 2,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmQzbsQM9hd6vc821LmpHCkLXv18fZfhbJf6ygyVhqWB5a/?fxhash=ooBD8DLYEFpSLBESMCp4FuxWgpVF11zcdv172qBSP2JYzkRk2e1',
+                backgroundColor: '#2a2a2a',
+                title: 'Richter',
+                artist: 'Leander Herzog & Richard Nadler'
+            },
+            {
+                day: 3,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmZxzku4gzUM8FhmfMvePp6k1fnN8Kg5wVBtKmgcEV8hGp/?fxhash=opFLfxQswcrLj61YiGHPu6s1b8syNBW9gWpS5gS5T7VpTd2Jo3F',
+                backgroundColor: '#0f0f0f',
+                title: 'FORMAT',
+                artist: 'Unruly Unroll'
+            },
+            {
+                day: 4,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmUuKiWb5BBK5dERnfZBRebDrtxxkvwFrNYZGs7uwbwSon/?fxhash=ooa8uk4tKCHC6hoeMsUD7YGzG2N39Cfad8UWawxAGsxjkjCu3R5',
+                backgroundColor: '#1c1c1c',
+                title: 'spaceplant',
+                artist: 'SPACEFILLER'
+            },
+            {
+                day: 5,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmXY7eGw9bwMm1ARi74bcWs8GKp6pANr1mvY16j9H5J8wa/?fxhash=onhCCdNuTX4jo1nURXX1gxbsh6hRFDYCk52p81jKs3pJuDMYDXs',
+                backgroundColor: '#000000',
+                title: 'Towers',
+                artist: 'ertdfgcvb'
+            },
+            {
+                day: 6,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmbtenHzwLSxffroZUrkKR7enJStJFR9imPgiUWzrahkXn/?fxhash=oo2fsH5cNasK6JSxtCtPHQoFhGD1vkydCpcDJ33UmArXEb6J6oA',
+                backgroundColor: '#0a0a0a',
+                title: 'NAZCA',
+                artist: 'Kim Asendorf'
+            },
+            {
+                day: 7,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmUtNadWtVawHPiankh2wdfXRww7QiJ7aGeerBTGbGDrT8/?fxhash=oosADfFNiXsZe1R3DW3L9mXKWSMMZ1PT2SnqmsgaPepDPHNfwPB',
+                backgroundColor: '#000000',
+                title: 'Device 1',
+                artist: 'ertdfgcvb'
+            },
+            {
+                day: 8,
+                url: 'https://gateway.fxhash2.xyz/ipfs/Qme9byjMbHncFr5i6poFxdbEcvsgCanZ5Voo5aCXAXJo9A/?fxhash=op7sXP9CTCpzC8cLa3QLBZAaGqqpBwBeWHzXKaEv4kyaWGnHqyW',
+                backgroundColor: '#1a1a1a',
+                title: 'Feedback Crystal',
+                artist: 'SPACEFILLER'
+            },
+            {
+                day: 9,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmTgCy4L4gKDJW3CadJ5df8HNXXzCBsVFVwWUguZuDaL8w/?fxhash=oozuWDFq3j3gRb4JZwb4FnqHmRDqshNdjn6CwijNvLQ7gEyrrqQ',
+                backgroundColor: '#000000',
+                title: 'Smooth Steps',
+                artist: 'ertdfgcvb'
+            },
+            {
+                day: 10,
+                url: 'https://gateway.fxhash2.xyz/ipfs/Qme7NuowNbhhLBbpQGVUoruvX2aRU7JJiGf3bF8LE22UiV/?fxhash=oofr9e7xaiLJRSzokySBJoYvacx37rTsRza2dZmSmBbvbQxUeuz',
+                backgroundColor: '#0d0d0d',
+                title: 'The Plant IV',
+                artist: 'ge1doot'
+            },
+            {
+                day: 11,
+                url: 'https://gateway.fxhash2.xyz/ipfs/Qmf7gmvgm4A9tKRNCePq4yghxU3VmusV2Cgc5Vqkdvpc8M/?fxhash=oogKC72UnsYRx4BCL8H9fEU8qsiEpgEqAeM6hWfE95VVXmwhRdE',
+                backgroundColor: '#1c1c1c',
+                title: 'Reading a book',
+                artist: 'Kim Asendorf'
+            },
+            {
+                day: 12,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmZhd9gN9ZvfU625mZ3TQTva3AdcrK2Uih8oXypDCTUufj/?fxhash=ooHG1FGPwEcnzrtNJuczSB89aKXM8ViM2kSXwP9rrTsbteBXFvP',
+                backgroundColor: '#0a0a0a',
+                title: 'waves',
+                artist: 'photoevaporation'
+            },
+            {
+                day: 13,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmYq9CZcE7F7Y26QWcs2sSDWDY2bHE6dWzy2t6V6xJBK5B/?fxhash=oosmXBAmiDZohT2UZFksxiHovKmbw38AinWwpsFjGCmCdZB67ac',
+                backgroundColor: '#1a1a1a',
+                title: 'Chromatic dazzle',
+                artist: 'wblut'
+            },
+            {
+                day: 14,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmbeTdUqdpXMdGUPUNtGYMjR3Fd4Sefkcyzswyk6rJoCvE/?fxhash=ooitMxqSqz4ZREuD93cVLgoRqfntGfbLH3VmFJ3ajKF4Yyg5MDk',
+                backgroundColor: '#0f0f0f',
+                title: 'Duet',
+                artist: 'Daeinc'
+            },
+            {
+                day: 15,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmZ7apABkx6Pqk23MbGaP81htBy1hE9hDgduneeq9RgD3F/?fxhash=ooNfaziWcSbQ8zJorFojfyh8AZHfhawKU6XeuwDCq7qcUA8SYTi',
+                backgroundColor: '#1c1c1c',
+                title: 'ZOOM (4hwf)',
+                artist: 'Kim Asendorf'
+            },
+            {
+                day: 16,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmZTcrmmV1jwfmjSMqvm1kF172uE57gkenDzPpyCCvnwSt/?fxhash=op27KU1CUZLXtjPV7F3p7DH8nRZF7F2ASK9vp5cDRfS17jt7FC1',
+                backgroundColor: '#0d0d0d',
+                title: 'Repeater',
+                artist: 'xiiixiii'
+            },
+            {
+                day: 17,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmZfi759zaBtpKgfRcmTTtDtmx73f4tm9RT1y6mxwwDVPV/?fxhash=opPJg1FgPgoTS7768LJx5kY7WKwd5pwo5ZBoNYpCMesD75urq1N',
+                backgroundColor: '#0a0a0a',
+                title: 'low orbit',
+                artist: 'photoevaporation'
+            },
+            {
+                day: 18,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmVLDF3XKQqBDxeCDsB9RfGxZHC8Y3JsEJnMvDFzjcjD9z/?fxhash=opHuhrGSQprbcN66E3DgYk6nHDTxYSYENtJgsXhKN4JuRMS1NcD',
+                backgroundColor: '#0f0f0f',
+                title: 'Ringworlds',
+                artist: '1mpo$ter'
+            },
+            {
+                day: 19,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmRFujiiRo1G2Bi7mnPKmtKERXGavcZy71H9xcFGtt8NK6/?fxhash=ooS2Ww4toUeATpZWfq8beHGo6p1bFmWgDutQhMAGLn3dLNDoH6H',
+                backgroundColor: '#1a1a1a',
+                title: 'SAMPLERS',
+                artist: 'itsgalo'
+            },
+        ];
+
+        // --- LOGIC ---
+
+        function getCurrentDate() {
+            if (DEBUG_DATE) {
+                return new Date(DEBUG_DATE);
+            }
+            return new Date();
+        }
+
+        function init() {
+            // Check for URL parameter first
+            const urlDay = getDayFromURL();
+
+            if (urlDay) {
+                // URL parameter takes precedence
+                console.log(`Using URL parameter: day ${urlDay}`);
+                const artwork = ARTWORKS.find(a => a.day === urlDay);
+                if (artwork && artwork.url) {
+                    loadArtwork(artwork);
+                } else {
+                    showMessage(`No artwork defined for day ${urlDay}.`);
+                }
+                return;
+            }
+
+            const now = getCurrentDate();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // 0-indexed (0 = Jan, 11 = Dec)
+            const date = now.getDate();
+
+            console.log(`Checking artwork for: ${now.toDateString()}`);
+
+            // Check if it is December 2025
+            // Note: For testing purposes before 2025, you might want to relax this check or use DEBUG_DATE
+            const isDecember2025 = year === 2025 && month === 11;
+
+            // If strict date checking is required:
+            // if (!isDecember2025) {
+            //     showMessage("Event starts in December 2025.");
+            //     return;
+            // }
+
+            // Find artwork for the current day
+            const artwork = ARTWORKS.find(a => a.day === date);
+
+            if (artwork && artwork.url) {
+                loadArtwork(artwork);
+            } else {
+                // Fallback or empty state
+                if (isDecember2025) {
+                    showMessage(`No artwork defined for December ${date}.`);
+                } else {
+                    // If not Dec 2025, maybe show Day 1 for demo purposes? 
+                    // Or just show message. Let's show message to be safe, but log it.
+                    console.log("Not December 2025, or no artwork found.");
+
+                    // FOR DEMO: If we are not in Dec 2025 yet, let's load Day 1 so the user sees something working immediately.
+                    // Remove this block if strict date adherence is preferred.
+                    if (ARTWORKS[0] && ARTWORKS[0].url) {
+                        console.log("Loading Day 1 artwork as demo/fallback.");
+                        loadArtwork(ARTWORKS[0]);
+                    } else {
+                        showMessage("Waiting for the first artwork.");
+                    }
+                }
+            }
+        }
+
+        function loadArtwork(artwork) {
+            const iframe = document.getElementById('artwork-frame');
+
+            // Set background color
+            if (artwork.backgroundColor) {
+                document.body.style.backgroundColor = artwork.backgroundColor;
+            }
+
+            // Load URL
+            iframe.src = artwork.url;
+
+            // Fade in when loaded
+            iframe.onload = () => {
+                iframe.classList.add('loaded');
+            };
+        }
+
+        function showMessage(text) {
+            const iframe = document.getElementById('artwork-frame');
+            const msgContainer = document.getElementById('message');
+            const h1 = msgContainer.querySelector('h1');
+
+            iframe.style.display = 'none';
+            msgContainer.style.display = 'flex';
+            h1.textContent = text;
+        }
+
+        // Run
+        init();
+
+    </script>
+</body>
+
+</html>
