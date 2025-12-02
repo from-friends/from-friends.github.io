@@ -105,18 +105,19 @@
             },
             {
                 day: 2,
-                url: 'https://gateway.fxhash2.xyz/ipfs/QmQzbsQM9hd6vc821LmpHCkLXv18fZfhbJf6ygyVhqWB5a/?fxhash=ooBD8DLYEFpSLBESMCp4FuxWgpVF11zcdv172qBSP2JYzkRk2e1',
-                backgroundColor: '#2a2a2a',
-                title: 'Richter',
-                artist: 'Leander Herzog & Richard Nadler'
-            },
-            {
-                day: 3,
                 url: 'https://gateway.fxhash2.xyz/ipfs/QmZxzku4gzUM8FhmfMvePp6k1fnN8Kg5wVBtKmgcEV8hGp/?fxhash=opFLfxQswcrLj61YiGHPu6s1b8syNBW9gWpS5gS5T7VpTd2Jo3F',
                 backgroundColor: '#0f0f0f',
                 title: 'FORMAT',
                 artist: 'Unruly Unroll'
             },
+            {
+                day: 3,
+                url: 'https://gateway.fxhash2.xyz/ipfs/QmQzbsQM9hd6vc821LmpHCkLXv18fZfhbJf6ygyVhqWB5a/?fxhash=ooBD8DLYEFpSLBESMCp4FuxWgpVF11zcdv172qBSP2JYzkRk2e1',
+                backgroundColor: '#2a2a2a',
+                title: 'Richter',
+                artist: 'Leander Herzog & Richard Nadler'
+            },
+
             {
                 day: 4,
                 url: 'https://gateway.fxhash2.xyz/ipfs/QmUuKiWb5BBK5dERnfZBRebDrtxxkvwFrNYZGs7uwbwSon/?fxhash=ooa8uk4tKCHC6hoeMsUD7YGzG2N39Cfad8UWawxAGsxjkjCu3R5',
@@ -302,6 +303,11 @@
         function loadArtwork(artwork) {
             const iframe = document.getElementById('artwork-frame');
 
+            // Set page title
+            if (artwork.title && artwork.artist) {
+                document.title = `${artwork.title} by ${artwork.artist}`;
+            }
+
             // Set background color
             if (artwork.backgroundColor) {
                 document.body.style.backgroundColor = artwork.backgroundColor;
@@ -326,8 +332,49 @@
             h1.textContent = text;
         }
 
+        // Auto-reload at 00:01 to show next day's artwork
+        function scheduleNextDayReload() {
+            const now = new Date();
+            
+            // Calculate time until 00:01:00 (next day)
+            const nextDay = new Date(now);
+            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setHours(0, 1, 0, 0);
+            
+            // If we're already past 00:01 today, this will already be tomorrow
+            // But if current time is before 00:01, we need today at 00:01
+            const todayAtMidnight = new Date(now);
+            todayAtMidnight.setHours(0, 1, 0, 0);
+            
+            const targetTime = todayAtMidnight > now ? todayAtMidnight : nextDay;
+            
+            const timeUntilReload = targetTime.getTime() - now.getTime();
+            
+            console.log(`Next reload scheduled for: ${targetTime.toLocaleString()}`);
+            console.log(`Time until reload: ${Math.round(timeUntilReload / 1000 / 60)} minutes`);
+            
+            setTimeout(() => {
+                console.log('Reloading page for new day...');
+                
+                // Add cache-busting parameter with day number
+                const reloadDate = new Date();
+                const day = reloadDate.getDate();
+                const url = new URL(window.location.href);
+                
+                // Remove any existing day parameter
+                url.searchParams.delete('day');
+                
+                // Add timestamp to prevent caching
+                url.searchParams.set('t', reloadDate.getTime());
+                
+                // Reload with cache-busting URL
+                window.location.href = url.toString();
+            }, timeUntilReload);
+        }
+
         // Run
         init();
+        scheduleNextDayReload();
 
     </script>
 </body>
