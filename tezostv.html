@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTV TezosTV</title>
+  <script src="tezostv/js/p5.min.js"></script>
+  <style>
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('tezostv/fonts/webfonts/JetBrainsMono-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('tezostv/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .logo {
+      width: 400px;
+      height: auto;
+      margin-bottom: 60px;
+    }
+
+    .countdown {
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .time-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .time-value {
+      font-size: 120px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .time-label {
+      font-size: 24px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .colon {
+      font-size: 100px;
+      font-weight: 700;
+      color: #ffffff;
+      padding-bottom: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <img src="tezostv/img/ttv-logo.png" alt="TTV Logo" class="logo">
+    <div class="countdown">
+      <div class="time-unit">
+        <div class="time-value" id="days">00</div>
+        <div class="time-label">Days</div>
+      </div>
+      <div class="colon">:</div>
+      <div class="time-unit">
+        <div class="time-value" id="hours">00</div>
+        <div class="time-label">Hours</div>
+      </div>
+      <div class="colon">:</div>
+      <div class="time-unit">
+        <div class="time-value" id="minutes">00</div>
+        <div class="time-label">Minutes</div>
+      </div>
+      <div class="colon">:</div>
+      <div class="time-unit">
+        <div class="time-value" id="seconds">00</div>
+        <div class="time-label">Seconds</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Kim Asendorf style pixel sorting
+    // Never-ending generative animation
+    // 1080p with big chunky pixels
+
+    const CANVAS_WIDTH = 1920;
+    const CANVAS_HEIGHT = 1080;
+    const PIXEL_SIZE = 50;
+    
+    // Grid dimensions based on pixel size
+    const GRID_WIDTH = Math.ceil(CANVAS_WIDTH / PIXEL_SIZE);   // 20
+    const GRID_HEIGHT = Math.ceil(CANVAS_HEIGHT / PIXEL_SIZE); // 11
+
+    let pg;
+    let mode = 0;
+    let blackValue = -10000000;
+    let brightnessValue = 60;
+    let whiteValue = -6000000;
+    let row = 0;
+    let column = 0;
+    let sortDirection = true;
+    let hueShift = 0;
+    let animationSpeed = 5; // Only update every N frames (1/5 speed)
+
+    function setup() {
+      pixelDensity(1);
+      createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+      noSmooth();
+      pg = createGraphics(GRID_WIDTH, GRID_HEIGHT);
+      pg.pixelDensity(1);
+      pg.noSmooth();
+      colorMode(HSB, 360, 100, 100, 100);
+      pg.colorMode(HSB, 360, 100, 100, 100);
+      
+      // Initialize with a gradient and noise pattern
+      initializeCanvas();
+    }
+
+    function initializeCanvas() {
+      pg.loadPixels();
+      for (let y = 0; y < GRID_HEIGHT; y++) {
+        for (let x = 0; x < GRID_WIDTH; x++) {
+          let n = noise(x * 0.3, y * 0.3, frameCount * 0.01);
+          let gray = floor(n * 255);
+          let index = (x + y * GRID_WIDTH) * 4;
+          pg.pixels[index] = gray;
+          pg.pixels[index + 1] = gray;
+          pg.pixels[index + 2] = gray;
+          pg.pixels[index + 3] = 255;
+        }
+      }
+      pg.updatePixels();
+    }
+
+    function draw() {
+      // Draw scaled up to fill screen
+      image(pg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      
+      // Only update sorting every N frames (1/5 speed)
+      if (frameCount % animationSpeed !== 0) return;
+      
+      // Apply pixel sorting
+      pg.loadPixels();
+      
+      if (sortDirection) {
+        // Sort one row per frame
+        sortRow(row);
+        row++;
+        if (row >= GRID_HEIGHT) {
+          row = 0;
+          sortDirection = !sortDirection;
+          mode = (mode + 1) % 3;
+        }
+      } else {
+        // Sort one column per frame
+        sortColumn(column);
+        column++;
+        if (column >= GRID_WIDTH) {
+          column = 0;
+          sortDirection = !sortDirection;
+          // Periodically reinitialize with new colors
+          if (random() < 0.3) {
+            hueShift = (hueShift + random(30, 90)) % 360;
+          }
+          // Add some new random colors to keep it interesting
+          addRandomPixels();
+        }
+      }
+      
+      pg.updatePixels();
+      
+      // Periodically add noise to keep animation evolving
+      if (frameCount % 300 === 0) {
+        addNoiseLayer();
+      }
+    }
+
+    function addRandomPixels() {
+      pg.loadPixels();
+      let numPixels = floor(random(3, 8));
+      for (let i = 0; i < numPixels; i++) {
+        let x = floor(random(GRID_WIDTH));
+        let y = floor(random(GRID_HEIGHT));
+        let gray = floor(random(255));
+        let index = (x + y * GRID_WIDTH) * 4;
+        pg.pixels[index] = gray;
+        pg.pixels[index + 1] = gray;
+        pg.pixels[index + 2] = gray;
+        pg.pixels[index + 3] = 255;
+      }
+      pg.updatePixels();
+    }
+
+    function addNoiseLayer() {
+      pg.loadPixels();
+      for (let i = 0; i < GRID_WIDTH * GRID_HEIGHT * 4; i += 4) {
+        let noiseAmt = random(-20, 20);
+        pg.pixels[i] = constrain(pg.pixels[i] + noiseAmt, 0, 255);
+        pg.pixels[i + 1] = constrain(pg.pixels[i + 1] + noiseAmt, 0, 255);
+        pg.pixels[i + 2] = constrain(pg.pixels[i + 2] + noiseAmt, 0, 255);
+      }
+      pg.updatePixels();
+    }
+
+    // Kim Asendorf's pixel sorting algorithm
+    function sortRow(y) {
+      let x = 0;
+      let xEnd = 0;
+      
+      while (xEnd < GRID_WIDTH - 1) {
+        switch (mode) {
+          case 0:
+            x = getFirstNotBlackX(x, y);
+            xEnd = getNextBlackX(x, y);
+            break;
+          case 1:
+            x = getFirstBrightX(x, y);
+            xEnd = getNextDarkX(x, y);
+            break;
+          case 2:
+            x = getFirstNotWhiteX(x, y);
+            xEnd = getNextWhiteX(x, y);
+            break;
+        }
+        
+        if (x < 0 || xEnd < 0) break;
+        
+        let sortLength = xEnd - x;
+        let unsorted = [];
+        
+        for (let i = 0; i < sortLength; i++) {
+          let index = ((x + i) + y * GRID_WIDTH) * 4;
+          unsorted.push({
+            r: pg.pixels[index],
+            g: pg.pixels[index + 1],
+            b: pg.pixels[index + 2],
+            a: pg.pixels[index + 3]
+          });
+        }
+        
+        unsorted.sort((a, b) => {
+          let brightnessA = a.r * 0.299 + a.g * 0.587 + a.b * 0.114;
+          let brightnessB = b.r * 0.299 + b.g * 0.587 + b.b * 0.114;
+          return brightnessA - brightnessB;
+        });
+        
+        for (let i = 0; i < sortLength; i++) {
+          let index = ((x + i) + y * GRID_WIDTH) * 4;
+          pg.pixels[index] = unsorted[i].r;
+          pg.pixels[index + 1] = unsorted[i].g;
+          pg.pixels[index + 2] = unsorted[i].b;
+          pg.pixels[index + 3] = unsorted[i].a;
+        }
+        
+        x = xEnd + 1;
+      }
+    }
+
+    function sortColumn(x) {
+      let y = 0;
+      let yEnd = 0;
+      
+      while (yEnd < GRID_HEIGHT - 1) {
+        switch (mode) {
+          case 0:
+            y = getFirstNotBlackY(x, y);
+            yEnd = getNextBlackY(x, y);
+            break;
+          case 1:
+            y = getFirstBrightY(x, y);
+            yEnd = getNextDarkY(x, y);
+            break;
+          case 2:
+            y = getFirstNotWhiteY(x, y);
+            yEnd = getNextWhiteY(x, y);
+            break;
+        }
+        
+        if (y < 0 || yEnd < 0) break;
+        
+        let sortLength = yEnd - y;
+        let unsorted = [];
+        
+        for (let i = 0; i < sortLength; i++) {
+          let index = (x + (y + i) * GRID_WIDTH) * 4;
+          unsorted.push({
+            r: pg.pixels[index],
+            g: pg.pixels[index + 1],
+            b: pg.pixels[index + 2],
+            a: pg.pixels[index + 3]
+          });
+        }
+        
+        unsorted.sort((a, b) => {
+          let brightnessA = a.r * 0.299 + a.g * 0.587 + a.b * 0.114;
+          let brightnessB = b.r * 0.299 + b.g * 0.587 + b.b * 0.114;
+          return brightnessA - brightnessB;
+        });
+        
+        for (let i = 0; i < sortLength; i++) {
+          let index = (x + (y + i) * GRID_WIDTH) * 4;
+          pg.pixels[index] = unsorted[i].r;
+          pg.pixels[index + 1] = unsorted[i].g;
+          pg.pixels[index + 2] = unsorted[i].b;
+          pg.pixels[index + 3] = unsorted[i].a;
+        }
+        
+        y = yEnd + 1;
+      }
+    }
+
+    // Helper functions for finding pixel boundaries
+    function getPixelValue(x, y) {
+      if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return 0;
+      let index = (x + y * GRID_WIDTH) * 4;
+      let r = pg.pixels[index];
+      let g = pg.pixels[index + 1];
+      let b = pg.pixels[index + 2];
+      return (255 << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    function getBrightness(x, y) {
+      if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return 0;
+      let index = (x + y * GRID_WIDTH) * 4;
+      return (pg.pixels[index] + pg.pixels[index + 1] + pg.pixels[index + 2]) / 3;
+    }
+
+    function getFirstNotBlackX(x, y) {
+      while (x < GRID_WIDTH) {
+        if (getPixelValue(x, y) > blackValue) return x;
+        x++;
+      }
+      return -1;
+    }
+
+    function getNextBlackX(x, y) {
+      x++;
+      while (x < GRID_WIDTH) {
+        if (getPixelValue(x, y) < blackValue) return x - 1;
+        x++;
+      }
+      return GRID_WIDTH - 1;
+    }
+
+    function getFirstBrightX(x, y) {
+      while (x < GRID_WIDTH) {
+        if (getBrightness(x, y) > brightnessValue) return x;
+        x++;
+      }
+      return -1;
+    }
+
+    function getNextDarkX(x, y) {
+      x++;
+      while (x < GRID_WIDTH) {
+        if (getBrightness(x, y) < brightnessValue) return x - 1;
+        x++;
+      }
+      return GRID_WIDTH - 1;
+    }
+
+    function getFirstNotWhiteX(x, y) {
+      while (x < GRID_WIDTH) {
+        if (getPixelValue(x, y) < whiteValue) return x;
+        x++;
+      }
+      return -1;
+    }
+
+    function getNextWhiteX(x, y) {
+      x++;
+      while (x < GRID_WIDTH) {
+        if (getPixelValue(x, y) > whiteValue) return x - 1;
+        x++;
+      }
+      return GRID_WIDTH - 1;
+    }
+
+    function getFirstNotBlackY(x, y) {
+      while (y < GRID_HEIGHT) {
+        if (getPixelValue(x, y) > blackValue) return y;
+        y++;
+      }
+      return -1;
+    }
+
+    function getNextBlackY(x, y) {
+      y++;
+      while (y < GRID_HEIGHT) {
+        if (getPixelValue(x, y) < blackValue) return y - 1;
+        y++;
+      }
+      return GRID_HEIGHT - 1;
+    }
+
+    function getFirstBrightY(x, y) {
+      while (y < GRID_HEIGHT) {
+        if (getBrightness(x, y) > brightnessValue) return y;
+        y++;
+      }
+      return -1;
+    }
+
+    function getNextDarkY(x, y) {
+      y++;
+      while (y < GRID_HEIGHT) {
+        if (getBrightness(x, y) < brightnessValue) return y - 1;
+        y++;
+      }
+      return GRID_HEIGHT - 1;
+    }
+
+    function getFirstNotWhiteY(x, y) {
+      while (y < GRID_HEIGHT) {
+        if (getPixelValue(x, y) < whiteValue) return y;
+        y++;
+      }
+      return -1;
+    }
+
+    function getNextWhiteY(x, y) {
+      y++;
+      while (y < GRID_HEIGHT) {
+        if (getPixelValue(x, y) > whiteValue) return y - 1;
+        y++;
+      }
+      return GRID_HEIGHT - 1;
+    }
+  </script>
+
+  <script>
+    // Countdown to 16.12.2025 at 18:30 CET
+    function updateCountdown() {
+      const now = new Date();
+      
+      // Target: December 16, 2025 at 18:30 CET (UTC+1)
+      // Create date in UTC and adjust for CET
+      const targetDate = new Date(Date.UTC(2025, 11, 16, 17, 30, 0)); // 17:30 UTC = 18:30 CET
+      
+      const diff = targetDate - now;
+      
+      if (diff <= 0) {
+        document.getElementById('days').textContent = '00';
+        document.getElementById('hours').textContent = '00';
+        document.getElementById('minutes').textContent = '00';
+        document.getElementById('seconds').textContent = '00';
+        return;
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      document.getElementById('days').textContent = String(days).padStart(2, '0');
+      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
