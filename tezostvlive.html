@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TezosTV LIVE</title>
+  <script src="tezostv/js/qrcode.min.js"></script>
+
+  <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="shortcut icon" href="favicon.ico" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      width: min(100%, 177.78vh);
+      max-width: 1920px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border: 2px solid #000;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .left-section {
+      flex: 0 0 60%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 2px solid #000;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .left-section img,
+    .left-section video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .left-section video {
+      display: block;
+    }
+
+    .right-section {
+      flex: 0 0 40%;
+      padding: 1.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .mint-label {
+      display: inline-block;
+      background: transparent;
+      color: #2196F3;
+      border: 2px solid #2196F3;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      width: fit-content;
+      border-radius: 6px;
+    }
+
+    .mint-label.mint {
+      color: #888888;
+      border-color: #888888;
+    }
+
+    .mint-label.list {
+      color: #2196F3;
+      border-color: #2196F3;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artist {
+      font-size: 1.5rem;
+      color: #888;
+      margin-top: 0.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 2px solid #000;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .detail-label {
+      color: #666;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .detail-value {
+      font-size: 1.125rem;
+      font-weight: 500;
+    }
+
+    .price {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #FF5722;
+    }
+
+    .qr-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    #qrcode {
+      background: #fff;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    #qrcode:hover {
+      opacity: 0.9;
+    }
+
+    #qrcode img {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="left-section" id="mediaContainer">
+      <img src="" alt="Artwork" id="artwork" style="display: none;">
+      <video id="video" style="display: none;" autoplay loop muted playsinline></video>
+    </div>
+
+    <div class="right-section">
+      <div class="content">
+        <div>
+          <div class="mint-label"></div>
+          <div class="title" id="title">Loading...</div>
+          <div class="artist" id="artist"></div>
+        </div>
+
+        <div class="details">
+          <div class="detail-row">
+            <span class="detail-label">Price</span>
+            <span class="detail-value price" id="price"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">File Type</span>
+            <span class="detail-value" id="fileType"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Editions</span>
+            <span class="detail-value" id="editions"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Time</span>
+            <span class="detail-value" id="time"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="qr-container">
+        <div id="qrcode"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Cache DOM elements
+    const elements = {
+      qrcode: document.getElementById("qrcode"),
+      artwork: document.getElementById("artwork"),
+      video: document.getElementById("video"),
+      mediaContainer: document.getElementById("mediaContainer"),
+      title: document.getElementById("title"),
+      artist: document.getElementById("artist"),
+      price: document.getElementById("price"),
+      fileType: document.getElementById("fileType"),
+      editions: document.getElementById("editions"),
+      time: document.getElementById("time")
+    };
+
+    const API_ENDPOINT = 'https://data.objkt.com/v3/graphql';
+    const REF_ID = '?ref=tz1cUtAZzDf4PmZHgtb2f22xkTRtaLYTufzA';
+    let latestEvent = null;
+    let updateInterval;
+
+    // Helper functions
+    function isCanvasSupported() {
+      const elem = document.createElement('canvas');
+      return !!(elem.getContext && elem.getContext('2d'));
+    }
+
+    function getImageUrl(uri) {
+      if (!uri) return null;
+      if (uri.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${uri.replace('ipfs://', '')}`;
+      return uri;
+    }
+
+    function formatTimeAgo(timestamp) {
+      const diffMins = Math.floor((new Date - new Date(timestamp)) / 6e4);
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${Math.floor(diffHours / 24)}d ago`;
+    }
+
+    function formatPrice(price) {
+      if (!price) return null;
+      return `${(price / 1e6).toFixed(2)} ꜩ`;
+    }
+    function getEventType(event) {
+      return event.type || "list";
+    }
+
+    const NSFW_TAGS = ['nsfw', 'nude', 'naked', 'sex', 'porn', 'xxx', 'erotic', 'hentai', 'fetish', 'bdsm', 'gore', 'violence', 'bloody', 'adult', '18+'];
+    const BLOCKED_HAZARDS = ['sexual', 'sensitive', 'violence', 'gore', 'medical', 'adult'];
+
+    function isNSFW(event) {
+      const token = event.token;
+      if (!token) return false;
+
+      const tags = token.tags ? token.tags.map(t => t.tag.name) : [];
+      const hazards = token.metadata?.accessibility?.hazards || [];
+
+      // Check tags
+      if (tags.some(t => NSFW_TAGS.includes(t.toLowerCase()))) {
+        console.log(`Filtered NSFW (tag): ${token.name}`);
+        return true;
+      }
+
+      // Check metadata hazards
+      if (hazards.some(h => BLOCKED_HAZARDS.includes(h.toLowerCase()))) {
+        console.log(`Filtered NSFW (hazard): ${token.name}`);
+        return true;
+      }
+
+      return false;
+    }
+
+    async function fetchEvents() {
+      const oneDayAgo = new Date(Date.now() - 864e5).toISOString();
+      const mintQuery = `query GetMints {
+        token(
+          order_by: {timestamp: desc},
+          limit: 10,
+          where: {
+            timestamp: {_gte: "${oneDayAgo}"},
+            mime: {_in: ["image/png", "image/jpeg", "image/gif", "image/webp", "video/mp4"]}
+          }
+        ) {
+          id: token_id
+          type: __typename
+          timestamp
+          token_id
+          fa_contract
+          name
+          thumbnail_uri
+          artifact_uri
+          mime
+          supply
+          creators {
+            holder {
+              alias
+              address
+            }
+          }
+          tags {
+            tag {
+              name
+            }
+          }
+          metadata
+        }
+      }`;
+      const listQuery = `query GetLists {
+        listing(
+          order_by: {timestamp: desc},
+          limit: 10,
+          where: {
+            status: {_eq: "active"},
+            timestamp: {_gte: "${oneDayAgo}"},
+            token: {
+              mime: {_in: ["image/png", "image/jpeg", "image/gif", "image/webp", "video/mp4"]}
+            }
+          }
+        ) {
+          id
+          timestamp
+          price
+          amount
+          token {
+            token_id
+            fa_contract
+            name
+            thumbnail_uri
+            artifact_uri
+            mime
+            supply
+            creators {
+              holder {
+                alias
+                address
+              }
+            }
+            tags {
+              tag {
+                name
+              }
+            }
+            metadata
+          }
+        }
+      }`;
+
+      try {
+        const [mintResponse, listResponse] = await Promise.all([
+          fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              query: mintQuery
+            })
+          }),
+          fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              query: listQuery
+            })
+          })
+        ]);
+
+        const [mintData, listData] = await Promise.all([mintResponse.json(), listResponse.json()]);
+        if (mintData.errors) throw new Error(mintData.errors[0].message);
+        if (listData.errors) throw new Error(listData.errors[0].message);
+
+        const mints = mintData.data.token.map(t => ({
+          ...t,
+          type: 'mint',
+          token: t,
+          id: `${t.fa_contract}-${t.token_id}`
+        }));
+        const lists = listData.data.listing.map(l => ({
+          ...l,
+          type: 'list'
+        }));
+        const allEvents = [...mints, ...lists].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Filter NSFW events and take top 5
+        const filteredEvents = allEvents.filter(e => !isNSFW(e)).slice(0, 5);
+
+        return filteredEvents.map(event => {
+          const amount = event.type === 'mint' ? event.supply : event.amount;
+          return {
+            id: event.id,
+            type: event.type,
+            timestamp: event.timestamp,
+            token: event.token,
+            price: event.price,
+            amount: amount
+          };
+        });
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+    }
+
+    function updateContent(event) {
+      if (!event) return;
+
+      const eventType = getEventType(event);
+      const tokenName = event.token?.name || 'Untitled';
+      const creatorAlias = event.token?.creators?.[0]?.holder?.alias || event.token?.creators?.[0]?.holder?.address?.substring(0, 8) || 'Unknown';
+      const price = formatPrice(event.price);
+      const timeAgo = formatTimeAgo(event.timestamp);
+      const amount = event.amount;
+      const mediaUrl = getImageUrl(event.token?.artifact_uri || event.token?.thumbnail_uri);
+      const mimeType = event.token?.mime;
+      const isVideo = mimeType && mimeType.startsWith('video/');
+      const tokenUrl = event.token?.fa_contract && event.token?.token_id ?
+        `https://objkt.com/tokens/${event.token.fa_contract}/${event.token.token_id}${REF_ID}` : '#';
+
+      // Update basic fields
+      elements.title.textContent = tokenName;
+      elements.artist.textContent = `by ${creatorAlias}`;
+      elements.price.textContent = price || 'TBA';
+      elements.time.textContent = timeAgo;
+      elements.editions.textContent = amount || 'TBA';
+      // Clean up mime type string
+      elements.fileType.textContent = mimeType ? mimeType.replace('image/', '').replace('video/', '').toUpperCase() : 'TBA';
+
+      // Update Mint/List label
+      const mintLabel = document.querySelector('.mint-label');
+      if (mintLabel) {
+        mintLabel.textContent = eventType;
+        mintLabel.classList.remove('mint', 'list');
+        mintLabel.classList.add(eventType);
+      }
+
+      // Handle Media (similar to original swap logic)
+      if (isVideo) {
+        elements.video.src = mediaUrl;
+        elements.video.style.display = "block";
+        elements.artwork.style.display = "none";
+        elements.video.load();
+        elements.video.play().catch(e => console.log("Video autoplay prevented:", e));
+      } else {
+        elements.artwork.src = mediaUrl;
+        elements.artwork.style.display = "block";
+        elements.video.style.display = "none";
+        // Reset video to stop audio if it was playing
+        elements.video.pause();
+        elements.video.src = "";
+      }
+
+      // Handle QR Code
+      elements.qrcode.innerHTML = '';
+      if (tokenUrl !== '#') {
+        // Route through marketplace.html
+        const marketplaceUrl = `marketplace.html?url=${encodeURIComponent(tokenUrl)}`;
+
+        new QRCode(elements.qrcode, {
+          text: marketplaceUrl,
+          width: 120,
+          height: 120,
+          colorDark: "#000",
+          colorLight: "#fff",
+          correctLevel: QRCode.CorrectLevel.L
+        });
+
+        // Update click listener
+        elements.qrcode.onclick = () => window.open(marketplaceUrl, '_blank');
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const events = await fetchEvents();
+        if (events && events.length > 0) {
+          const newestEvent = events[0];
+          // Only update if it's a new event
+          if (!latestEvent || latestEvent.id !== newestEvent.id) {
+            latestEvent = newestEvent;
+            console.log('New event found:', latestEvent);
+            updateContent(latestEvent);
+          }
+        } else {
+          console.log('No events found');
+        }
+      } catch (error) {
+        console.error('Error in loadEvents:', error);
+      }
+    }
+
+    function startApp() {
+      loadEvents();
+      // Check for new events
+      updateInterval = setInterval(loadEvents, 20000);
+    }
+
+    startApp();
+  </script>
+</body>
+
+</html>
