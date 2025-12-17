@@ -281,6 +281,7 @@
       'tz1NYosHyh53NP6q3z2SxaTBpkXiNqEmMuzg',
       'tz1UPKGL9TG6MxWGemSXNGL8zzV3HQM7NMrP'
     ];
+    const BLACKLISTED_TITLE_KEYWORDS = ['NFTimbre'];
 
     function isNSFW(event) {
       const token = event.token;
@@ -335,6 +336,24 @@
             console.log(`Filtered blacklisted seller: ${token.name || 'Unknown'} (${trimmedAddress})`);
             return true;
           }
+        }
+      }
+
+      return false;
+    }
+
+    function hasBlacklistedTitle(event) {
+      const token = event.token;
+      if (!token || !token.name) {
+        return false;
+      }
+
+      const title = token.name;
+      // Check if title includes any blacklisted keywords (case-insensitive)
+      for (const keyword of BLACKLISTED_TITLE_KEYWORDS) {
+        if (title.toLowerCase().includes(keyword.toLowerCase())) {
+          console.log(`Filtered blacklisted title: ${title} (contains "${keyword}")`);
+          return true;
         }
       }
 
@@ -457,8 +476,8 @@
         }));
         const allEvents = [...mints, ...lists].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        // Filter NSFW events and blacklisted artists, then take top 5
-        const filteredEvents = allEvents.filter(e => !isNSFW(e) && !isBlacklisted(e)).slice(0, 5);
+        // Filter NSFW events, blacklisted artists, and blacklisted titles, then take top 5
+        const filteredEvents = allEvents.filter(e => !isNSFW(e) && !isBlacklisted(e) && !hasBlacklistedTitle(e)).slice(0, 5);
 
         return filteredEvents.map(event => {
           const amount = event.type === 'mint' ? event.supply : event.amount;
