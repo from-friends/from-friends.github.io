@@ -306,14 +306,36 @@
 
     function isBlacklisted(event) {
       const token = event.token;
-      if (!token) return false;
+      if (!token) {
+        return false;
+      }
 
-      const creatorAddress = token.creators?.[0]?.holder?.address;
-      if (!creatorAddress) return false;
+      // Check all creators, not just the first one
+      const creators = token.creators || [];
+      
+      // Check each creator's address
+      for (const creator of creators) {
+        const address = creator?.holder?.address;
+        if (address) {
+          // Trim whitespace and check against blacklist
+          const trimmedAddress = address.trim();
+          if (BLACKLISTED_ADDRESSES.includes(trimmedAddress)) {
+            console.log(`Filtered blacklisted artist: ${token.name || 'Unknown'} (${trimmedAddress})`);
+            return true;
+          }
+        }
+      }
 
-      if (BLACKLISTED_ADDRESSES.includes(creatorAddress)) {
-        console.log(`Filtered blacklisted artist: ${token.name} (${creatorAddress})`);
-        return true;
+      // For listings, also check the seller address (person who listed it)
+      if (event.type === 'list') {
+        const sellerAddress = event.seller?.address;
+        if (sellerAddress) {
+          const trimmedAddress = sellerAddress.trim();
+          if (BLACKLISTED_ADDRESSES.includes(trimmedAddress)) {
+            console.log(`Filtered blacklisted seller: ${token.name || 'Unknown'} (${trimmedAddress})`);
+            return true;
+          }
+        }
       }
 
       return false;
@@ -370,6 +392,9 @@
           timestamp
           price
           amount
+          seller {
+            address
+          }
           token {
             token_id
             fa_contract
