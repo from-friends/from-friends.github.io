@@ -485,7 +485,7 @@
       elements.qrcode.innerHTML = '';
       if (tokenUrl !== '#') {
         // Route through marketplace.html
-        const marketplaceUrl = `marketplace.html?url=${encodeURIComponent(tokenUrl)}`;
+        const marketplaceUrl = `https://from-friends.github.io/marketplace.html?url=${encodeURIComponent(tokenUrl)}`;
 
         new QRCode(elements.qrcode, {
           text: marketplaceUrl,
