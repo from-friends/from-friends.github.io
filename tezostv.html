@@ -1273,6 +1273,11 @@
 
         const NSFW_TAGS = ['nsfw', 'nude', 'naked', 'sex', 'porn', 'xxx', 'erotic', 'hentai', 'fetish', 'bdsm', 'gore', 'violence', 'bloody', 'adult', '18+'];
         const BLOCKED_HAZARDS = ['sexual', 'sensitive', 'violence', 'gore', 'medical', 'adult'];
+        const BLACKLISTED_ADDRESSES = [
+            'tz1NYosHyh53NP6q3z2SxaTBpkXiNqEmMuzg',
+            'tz1UPKGL9TG6MxWGemSXNGL8zzV3HQM7NMrP'
+        ];
+        const BLACKLISTED_TITLE_KEYWORDS = ['NFTimbre'];
 
         function isNSFW(event) {
             const token = event.token;
@@ -1281,6 +1286,61 @@
             const hazards = token.metadata?.accessibility?.hazards || [];
             if (tags.some(t => NSFW_TAGS.includes(t.toLowerCase()))) return true;
             if (hazards.some(h => BLOCKED_HAZARDS.includes(h.toLowerCase()))) return true;
+            return false;
+        }
+
+        function isBlacklisted(event) {
+            const token = event.token;
+            if (!token) {
+                return false;
+            }
+
+            // Check all creators, not just the first one
+            const creators = token.creators || [];
+            
+            // Check each creator's address
+            for (const creator of creators) {
+                const address = creator?.holder?.address;
+                if (address) {
+                    // Trim whitespace and check against blacklist
+                    const trimmedAddress = address.trim();
+                    if (BLACKLISTED_ADDRESSES.includes(trimmedAddress)) {
+                        console.log(`Filtered blacklisted artist: ${token.name || 'Unknown'} (${trimmedAddress})`);
+                        return true;
+                    }
+                }
+            }
+
+            // For listings, also check the seller address (person who listed it)
+            if (event.type === 'list') {
+                const sellerAddress = event.seller?.address;
+                if (sellerAddress) {
+                    const trimmedAddress = sellerAddress.trim();
+                    if (BLACKLISTED_ADDRESSES.includes(trimmedAddress)) {
+                        console.log(`Filtered blacklisted seller: ${token.name || 'Unknown'} (${trimmedAddress})`);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function hasBlacklistedTitle(event) {
+            const token = event.token;
+            if (!token || !token.name) {
+                return false;
+            }
+
+            const title = token.name;
+            // Check if title includes any blacklisted keywords (case-insensitive)
+            for (const keyword of BLACKLISTED_TITLE_KEYWORDS) {
+                if (title.toLowerCase().includes(keyword.toLowerCase())) {
+                    console.log(`Filtered blacklisted title: ${title} (contains "${keyword}")`);
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -1384,7 +1444,7 @@
                 }));
                 const lists = listData.data.listing.map(l => ({ ...l, type: 'list' }));
                 const allEventsData = [...mints, ...lists].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                const filteredEvents = allEventsData.filter(e => !isNSFW(e));
+                const filteredEvents = allEventsData.filter(e => !isNSFW(e) && !isBlacklisted(e) && !hasBlacklistedTitle(e));
                 return filteredEvents.map(event => {
                     const amount = event.type === 'mint' ? event.supply : event.amount;
                     return {
