@@ -123,6 +123,14 @@
             animation: pulse 2s infinite;
         }
 
+        .live-indicator-mobile {
+            display: none;
+        }
+
+        .feed-btn-mobile {
+            display: none;
+        }
+
         .social-nav {
             display: flex;
             gap: 12px;
@@ -296,7 +304,7 @@
 
         /* Live Stream Preview */
         .stream-preview {
-            padding: 60px 24px 80px;
+            padding: 10px 24px 10px;
             background-color: var(--bg-zebra);
         }
 
@@ -307,8 +315,8 @@
 
         .stream-embed {
             position: relative;
-            width: 320px;
-            height: 180px;
+            width: 400px;
+            height: 225px;
             margin: 0 auto;
             background-color: var(--bg-tertiary);
             border-radius: 12px;
@@ -395,7 +403,7 @@
             font-size: 32px;
             font-weight: 600;
             text-align: center;
-            margin-bottom: 48px;
+            margin-bottom: 24px;
             letter-spacing: -1px;
         }
 
@@ -664,7 +672,7 @@
 
         /* Recently Featured Artworks */
         .recent-artworks {
-            padding: 60px 24px;
+            padding: 35px 24px;
         }
 
         .feed-container {
@@ -716,7 +724,7 @@
         }
 
         .thumbnail-cell {
-            width: 80px;
+            width: 88px;
             position: relative;
         }
 
@@ -740,9 +748,9 @@
         }
 
         .thumbnail {
-            width: 60px;
+            width: 66px;
             height: auto;
-            max-height: 80px;
+            max-height: 88px;
             object-fit: contain;
             border-radius: 6px;
             background-color: var(--bg-tertiary);
@@ -755,9 +763,14 @@
             color: var(--text-primary);
         }
 
-        .artist-cell {
+        .title-text {
+            margin-bottom: 4px;
+        }
+
+        .artist-text {
             color: var(--text-secondary);
             font-size: 14px;
+            font-weight: normal;
         }
 
         .price-cell {
@@ -829,9 +842,66 @@
             transform: none;
         }
 
+        @media (min-width: 769px) {
+            .nav-right .live-indicator {
+                display: none;
+            }
+
+            .live-indicator-mobile {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .feed-btn-mobile {
+                display: inline-block;
+                padding: 8px 16px;
+                background-color: var(--bg-tertiary);
+                color: var(--text-primary);
+                text-decoration: none;
+                border-radius: 20px;
+                border: 1px solid var(--border);
+                font-weight: 500;
+                font-size: 14px;
+                transition: all 0.2s;
+            }
+
+            .feed-btn-mobile:hover {
+                background-color: var(--bg-secondary);
+                border-color: var(--accent);
+            }
+
+            .thumbnail-cell {
+                width: 132px;
+            }
+
+            .thumbnail {
+                width: 99px;
+                max-height: 132px;
+            }
+        }
+
         @media (max-width: 768px) {
+            .recent-artworks {
+                padding: 60px 0;
+            }
+
+            .recent-artworks .container {
+                padding: 0;
+            }
+
+            .feed-container {
+                overflow-x: visible;
+                padding: 0;
+                margin: 0;
+            }
+
             .artworks-table {
-                min-width: 500px;
+                min-width: 100%;
+                width: 100%;
+                border-radius: 0;
             }
 
             .artworks-table th,
@@ -847,7 +917,10 @@
                 font-size: 14px;
             }
 
-            .artist-cell,
+            .artist-text {
+                font-size: 12px;
+            }
+
             .price-cell {
                 font-size: 13px;
             }
@@ -876,9 +949,55 @@
                 gap: 16px;
             }
 
+            .nav-right .live-indicator {
+                display: none;
+            }
+
             .nav-right {
-                flex-direction: column;
+                flex-direction: row;
                 gap: 12px;
+            }
+
+            .live-indicator-mobile {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .feed-btn-mobile {
+                display: inline-block;
+                padding: 8px 16px;
+                background-color: var(--bg-tertiary);
+                color: var(--text-primary);
+                text-decoration: none;
+                border-radius: 20px;
+                border: 1px solid var(--border);
+                font-weight: 500;
+                font-size: 14px;
+                transition: all 0.2s;
+            }
+
+            .feed-btn-mobile:hover {
+                background-color: var(--bg-secondary);
+                border-color: var(--accent);
+            }
+
+            .stream-preview {
+                padding: 10px 12px 10px;
+            }
+
+            .stream-container {
+                padding: 0;
+            }
+
+            .stream-embed {
+                width: 95%;
+                height: 0;
+                padding-bottom: 56.25%;
+                margin: 0 auto;
+                border-radius: 8px;
             }
 
             h1 {
@@ -916,7 +1035,8 @@
             }
         }
     </style>
-<script defer src="https://cloud.umami.is/script.js" data-website-id="77f26836-27dd-4d25-b9b0-dcf4cdf4b2b7"></script>        
+    <script defer src="https://cloud.umami.is/script.js"
+        data-website-id="77f26836-27dd-4d25-b9b0-dcf4cdf4b2b7"></script>
 </head>
 
 <body>
@@ -938,6 +1058,7 @@
                     <div class="live-dot"></div>
                     <span>LIVE NOW</span>
                 </div>
+                <a href="#featured" class="feed-btn-mobile">Recently Shown</a>
             </div>
         </nav>
     </header>
@@ -945,10 +1066,12 @@
     <main>
         <section class="hero">
             <div class="container">
-
-
+                <div class="live-indicator-mobile">
+                    <div class="live-dot"></div>
+                    <span>LIVE NOW</span>
+                </div>
                 <h1>Art on Tezos, Streaming 24/7</h1>
-                <p class="subtitle">Your live 24/7 feed for new mints and listings across Tezos art platforms.
+                <p class="subtitle">Your 24/7 live feed for new mints and listings across Tezos art platforms.
 
                 </p>
                 <div class="cta-buttons">
@@ -977,7 +1100,8 @@
         <section class="stream-preview" id="live">
             <div class="stream-container">
                 <div class="stream-embed">
-                    <iframe width="320" height="180" src="https://www.youtube.com/embed/omlzhOwHsHo?si=0sG3QqwDSLCzwDWw"
+                    <iframe width="400" height="225"
+                        src="https://www.youtube-nocookie.com/embed/omlzhOwHsHo?si=o4SadXPJO2RX57Em"
                         title="YouTube video player" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -1045,6 +1169,18 @@
                             discover,
                             any time of day.</div>
                     </div>
+                    <div class="faq-item">
+                        <div class="faq-question">How can I embed the live stream on my own site?</div>
+                        <div class="faq-answer">You can easily embed the Tezos TV live stream on your website using an
+                            iframe. For YouTube, use the following code:<br><br>
+                            <code id="embedCodeFaq"
+                                style="background-color: var(--bg-tertiary); padding: 12px; border-radius: 6px; display: block; font-family: 'Courier New', monospace; font-size: 14px; color: var(--text-secondary); overflow-x: auto; margin-bottom: 12px;">&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/omlzhOwHsHo?si=o4SadXPJO2RX57Em" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen&gt;&lt;/iframe&gt;</code>
+                            <button class="copy-btn" id="copyEmbedBtn" style="margin-top: 8px;">
+                                <i class="mdi mdi-content-copy"></i>
+                                Copy Code
+                            </button>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -1101,6 +1237,31 @@
                 }
             });
         });
+
+        // Copy embed code to clipboard
+        const copyEmbedBtn = document.getElementById('copyEmbedBtn');
+        if (copyEmbedBtn) {
+            copyEmbedBtn.addEventListener('click', async () => {
+                const embedCode = document.getElementById('embedCodeFaq');
+                const code = embedCode.textContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                try {
+                    await navigator.clipboard.writeText(code);
+                    const icon = copyEmbedBtn.querySelector('i');
+                    const originalHTML = copyEmbedBtn.innerHTML;
+                    copyEmbedBtn.classList.add('copied');
+                    if (icon) {
+                        icon.className = 'mdi mdi-check';
+                    }
+                    copyEmbedBtn.innerHTML = '<i class="mdi mdi-check"></i> Copied!';
+                    setTimeout(() => {
+                        copyEmbedBtn.classList.remove('copied');
+                        copyEmbedBtn.innerHTML = originalHTML;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                }
+            });
+        }
 
         // Artworks API
         const API_ENDPOINT = 'https://data.objkt.com/v3/graphql';
@@ -1265,7 +1426,6 @@
                             <tr>
                                 <th>Thumbnail</th>
                                 <th>Title</th>
-                                <th>Artist</th>
                                 <th>Price</th>
                                 <th>Link</th>
                             </tr>
@@ -1279,16 +1439,18 @@
             let rowsHtml = '';
             itemsToDisplay.forEach(event => {
                 const tokenName = event.token?.name || 'Untitled';
+                const isMobile = window.innerWidth <= 768;
+                const maxLength = isMobile ? 15 : 30;
+                const truncatedTitle = tokenName.length > maxLength ? tokenName.substring(0, maxLength) + '...' : tokenName;
                 const tokenUrl = event.token?.fa_contract && event.token?.token_id ? `https://objkt.com/tokens/${event.token.fa_contract}/${event.token.token_id}${REF_ID}` : '#';
                 const creatorAlias = event.token?.creators?.[0]?.holder?.alias || event.token?.creators?.[0]?.holder?.address?.substring(0, 8) || 'Unknown';
-                const price = event.price ? `${(event.price / 1e6).toFixed(2)} ꜩ` : '-';
+                const price = event.price ? `${(event.price / 1e6).toFixed(2)} ꜩ` : 'TBA';
                 const thumbnailUrl = getImageUrl(event.token);
                 const mediaContent = `<div class="thumbnail-wrapper"><img src="${thumbnailUrl}" alt="${tokenName}" class="thumbnail" loading="lazy"></div>`;
                 rowsHtml += `
                     <tr onclick="window.open('${tokenUrl}', '_blank')">
                         <td class="thumbnail-cell">${mediaContent}</td>
-                        <td class="title-cell">${tokenName}</td>
-                        <td class="artist-cell">${creatorAlias}</td>
+                        <td class="title-cell"><div class="title-text">${truncatedTitle}</div><div class="artist-text">${creatorAlias}</div></td>
                         <td class="price-cell">${price}</td>
                         <td class="link-cell"><a href="${tokenUrl}" target="_blank" class="link-btn" onclick="event.stopPropagation()">View</a></td>
                     </tr>
