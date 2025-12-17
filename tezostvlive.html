@@ -275,8 +275,12 @@
       return event.type || "list";
     }
 
-    const NSFW_TAGS = ['nsfw', 'nude', 'naked', 'sex', 'porn', 'xxx', 'erotic', 'hentai', 'fetish', 'bdsm', 'gore', 'violence', 'bloody', 'adult', '18+'];
+    const NSFW_TAGS = ['nsfw', 'sexy', 'nude', 'naked', 'sex', 'porn', 'xxx', 'erotic', 'hentai', 'fetish', 'bdsm', 'gore', 'violence', 'bloody', 'adult', '18+'];
     const BLOCKED_HAZARDS = ['sexual', 'sensitive', 'violence', 'gore', 'medical', 'adult'];
+    const BLACKLISTED_ADDRESSES = [
+      'tz1NYosHyh53NP6q3z2SxaTBpkXiNqEmMuzg',
+      'tz1UPKGL9TG6MxWGemSXNGL8zzV3HQM7NMrP'
+    ];
 
     function isNSFW(event) {
       const token = event.token;
@@ -294,6 +298,21 @@
       // Check metadata hazards
       if (hazards.some(h => BLOCKED_HAZARDS.includes(h.toLowerCase()))) {
         console.log(`Filtered NSFW (hazard): ${token.name}`);
+        return true;
+      }
+
+      return false;
+    }
+
+    function isBlacklisted(event) {
+      const token = event.token;
+      if (!token) return false;
+
+      const creatorAddress = token.creators?.[0]?.holder?.address;
+      if (!creatorAddress) return false;
+
+      if (BLACKLISTED_ADDRESSES.includes(creatorAddress)) {
+        console.log(`Filtered blacklisted artist: ${token.name} (${creatorAddress})`);
         return true;
       }
 
@@ -413,8 +432,8 @@
         }));
         const allEvents = [...mints, ...lists].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        // Filter NSFW events and take top 5
-        const filteredEvents = allEvents.filter(e => !isNSFW(e)).slice(0, 5);
+        // Filter NSFW events and blacklisted artists, then take top 5
+        const filteredEvents = allEvents.filter(e => !isNSFW(e) && !isBlacklisted(e)).slice(0, 5);
 
         return filteredEvents.map(event => {
           const amount = event.type === 'mint' ? event.supply : event.amount;
