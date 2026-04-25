@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TezosTV LIVE</title>
   <script src="tezostv/js/qrcode.min.js"></script>
+  <!-- NSFWJS v2.4.2 bundles TF.js internally, model files self-hosted -->
+  <script src="tezostv/js/nsfwjs.min.js"></script>
 
   <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -252,10 +254,73 @@
       return !!(elem.getContext && elem.getContext('2d'));
     }
 
-    function getImageUrl(uri) {
+    // ── IPFS Multi-Gateway + objkt CDN Hybrid System ─────────────────
+    const IPFS_GATEWAYS = [
+      'https://ipfs.io/ipfs/',
+      'https://w3s.link/ipfs/',
+      'https://dweb.link/ipfs/',
+      'https://nftstorage.link/ipfs/'
+    ];
+
+    function getIpfsHash(uri) {
       if (!uri) return null;
-      if (uri.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${uri.replace('ipfs://', '')}`;
+      if (uri.startsWith('ipfs://')) return uri.slice(7);
+      return null;
+    }
+
+    function ipfsToHttp(uri, gatewayIndex) {
+      if (!uri) return null;
+      const hash = getIpfsHash(uri);
+      if (hash) return IPFS_GATEWAYS[Math.min(gatewayIndex || 0, IPFS_GATEWAYS.length - 1)] + hash;
       return uri;
+    }
+
+    // objkt CDN – full-resolution artifact (best for 1080p display)
+    function getObjktArtifactUrl(token) {
+      if (!token?.fa_contract || !token?.token_id) return null;
+      return `https://assets.objkt.media/file/assets-003/${token.fa_contract}/${token.token_id}/artifact`;
+    }
+
+    // objkt CDN – 400px thumbnail (fast for NSFW classification)
+    function getObjktThumbUrl(token) {
+      if (!token?.fa_contract || !token?.token_id) return null;
+      return `https://assets.objkt.media/file/assets-003/${token.fa_contract}/${token.token_id}/thumb400`;
+    }
+
+    // Ordered display URLs: ipfs.io → objkt CDN artifact → other IPFS artifact gateways → IPFS thumbnail gateways
+    function getDisplayUrls(token) {
+      const urls = [];
+      const artifactHash = getIpfsHash(token?.artifact_uri);
+
+      // 1. First choice: ipfs.io
+      if (artifactHash) urls.push(IPFS_GATEWAYS[0] + artifactHash);
+
+      // 2. Second choice: objkt CDN
+      const cdnUrl = getObjktArtifactUrl(token);
+      if (cdnUrl) urls.push(cdnUrl);
+
+      // 3. Third choices: Remaining IPFS gateways
+      if (artifactHash) IPFS_GATEWAYS.slice(1).forEach(gw => urls.push(gw + artifactHash));
+      else if (token?.artifact_uri) urls.push(token.artifact_uri);
+
+      // 4. Last choices: Thumbnails
+      const thumbHash = getIpfsHash(token?.thumbnail_uri);
+      if (thumbHash) IPFS_GATEWAYS.forEach(gw => urls.push(gw + thumbHash));
+      else if (token?.thumbnail_uri) urls.push(token.thumbnail_uri);
+
+      return urls;
+    }
+
+    // Ordered classification URLs: objkt CDN thumb → IPFS thumbnail gateways
+    function getClassificationUrls(token) {
+      const urls = [];
+      const cdnThumb = getObjktThumbUrl(token);
+      if (cdnThumb) urls.push(cdnThumb);
+      const thumbUri = token?.thumbnail_uri || token?.artifact_uri;
+      const hash = getIpfsHash(thumbUri);
+      if (hash) IPFS_GATEWAYS.forEach(gw => urls.push(gw + hash));
+      else if (thumbUri) urls.push(thumbUri);
+      return urls;
     }
 
     function formatTimeAgo(timestamp) {
@@ -313,7 +378,7 @@
 
       // Check all creators, not just the first one
       const creators = token.creators || [];
-      
+
       // Check each creator's address
       for (const creator of creators) {
         const address = creator?.holder?.address;
@@ -358,6 +423,105 @@
       }
 
       return false;
+    }
+
+    // ── NSFWJS Image Classification ──────────────────────────────────
+    let nsfwModel = null;
+    const nsfwCache = new Map();
+
+    // Max safety: very strict thresholds
+    const NSFW_THRESHOLDS = {
+      Porn: 0.10,
+      Hentai: 0.10,
+      Sexy: 0.20
+    };
+
+    async function loadNSFWModel(retries = 3) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          console.log(`Loading NSFW model (attempt ${attempt}/${retries})...`);
+          // Race against a 30s timeout
+          nsfwModel = await Promise.race([
+            nsfwjs.load('tezostv/nsfw_model/'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Model load timeout')), 30000))
+          ]);
+          console.log('NSFW model loaded successfully');
+          return;
+        } catch (e) {
+          console.error(`NSFW model load attempt ${attempt} failed:`, e.message);
+          if (attempt < retries) {
+            console.log('Retrying in 3 seconds...');
+            await new Promise(r => setTimeout(r, 3000));
+          }
+        }
+      }
+      console.error('NSFW model failed to load after all retries. All artwork will be blocked (fail-closed).');
+    }
+
+    // Try loading an image from multiple URLs until one succeeds (CORS-enabled)
+    async function loadImageForClassification(urls) {
+      for (const url of urls) {
+        try {
+          const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.crossOrigin = 'anonymous';
+            const timeout = setTimeout(() => reject(new Error('timeout')), 10000);
+            image.onload = () => { clearTimeout(timeout); resolve(image); };
+            image.onerror = () => { clearTimeout(timeout); reject(new Error('load failed')); };
+            image.src = url;
+          });
+          console.log(`Classification image loaded from: ${url}`);
+          return img;
+        } catch (e) {
+          console.log(`Classification source failed (${e.message}): ${url}`);
+        }
+      }
+      throw new Error('All classification URLs failed');
+    }
+
+    async function isEventSFW(event) {
+      // Fail-closed: no model = no show
+      if (!nsfwModel) {
+        console.warn('NSFW model not loaded, blocking artwork (fail-closed)');
+        return false;
+      }
+
+      const token = event.token;
+      if (!token) return false;
+
+      // Cache by token identity, not URL
+      const cacheKey = `${token.fa_contract}-${token.token_id}`;
+      if (nsfwCache.has(cacheKey)) {
+        return nsfwCache.get(cacheKey);
+      }
+
+      const classUrls = getClassificationUrls(token);
+      if (classUrls.length === 0) return false;
+
+      try {
+        const img = await loadImageForClassification(classUrls);
+        const predictions = await nsfwModel.classify(img);
+
+        const scores = {};
+        predictions.forEach(p => scores[p.className] = p.probability);
+
+        const isUnsafe = Object.entries(NSFW_THRESHOLDS).some(
+          ([category, threshold]) => (scores[category] || 0) > threshold
+        );
+
+        if (isUnsafe) {
+          console.log(`🚫 NSFW BLOCKED: "${token.name}"`, scores);
+        } else {
+          console.log(`✅ SFW OK: "${token.name}"`, scores);
+        }
+
+        const isSafe = !isUnsafe;
+        nsfwCache.set(cacheKey, isSafe);
+        return isSafe;
+      } catch (e) {
+        console.error(`NSFW classification failed for "${token.name}", blocking (fail-closed):`, e.message);
+        return false; // fail-closed
+      }
     }
 
     async function fetchEvents() {
@@ -505,7 +669,7 @@
       const price = formatPrice(event.price);
       const timeAgo = formatTimeAgo(event.timestamp);
       const amount = event.amount;
-      const mediaUrl = getImageUrl(event.token?.artifact_uri || event.token?.thumbnail_uri);
+      const displayUrls = getDisplayUrls(event.token);
       const mimeType = event.token?.mime;
       const isVideo = mimeType && mimeType.startsWith('video/');
       const tokenUrl = event.token?.fa_contract && event.token?.token_id ?
@@ -528,15 +692,38 @@
         mintLabel.classList.add(eventType);
       }
 
-      // Handle Media (similar to original swap logic)
+      // Handle Media – multi-gateway fallback for reliable loading
+      if (displayUrls.length === 0) return;
+
       if (isVideo) {
-        elements.video.src = mediaUrl;
+        let vidIdx = 0;
+        elements.video.onerror = () => {
+          vidIdx++;
+          if (vidIdx < displayUrls.length) {
+            console.log(`Video failed, trying source ${vidIdx + 1}/${displayUrls.length}`);
+            elements.video.src = displayUrls[vidIdx];
+            elements.video.load();
+          } else {
+            console.error('All video sources failed for:', event.token?.name);
+          }
+        };
+        elements.video.src = displayUrls[0];
         elements.video.style.display = "block";
         elements.artwork.style.display = "none";
         elements.video.load();
         elements.video.play().catch(e => console.log("Video autoplay prevented:", e));
       } else {
-        elements.artwork.src = mediaUrl;
+        let imgIdx = 0;
+        elements.artwork.onerror = () => {
+          imgIdx++;
+          if (imgIdx < displayUrls.length) {
+            console.log(`Image failed, trying source ${imgIdx + 1}/${displayUrls.length}`);
+            elements.artwork.src = displayUrls[imgIdx];
+          } else {
+            console.error('All image sources failed for:', event.token?.name);
+          }
+        };
+        elements.artwork.src = displayUrls[0];
         elements.artwork.style.display = "block";
         elements.video.style.display = "none";
         // Reset video to stop audio if it was playing
@@ -568,13 +755,20 @@
       try {
         const events = await fetchEvents();
         if (events && events.length > 0) {
-          const newestEvent = events[0];
-          // Only update if it's a new event
-          if (!latestEvent || latestEvent.id !== newestEvent.id) {
-            latestEvent = newestEvent;
-            console.log('New event found:', latestEvent);
-            updateContent(latestEvent);
+          // Iterate through events to find the first SFW one
+          for (const event of events) {
+            const safe = await isEventSFW(event);
+            if (safe) {
+              // Only update display if it's a different event
+              if (!latestEvent || latestEvent.id !== event.id) {
+                latestEvent = event;
+                console.log('New safe event found:', latestEvent);
+                updateContent(latestEvent);
+              }
+              return; // Found best safe event, done
+            }
           }
+          console.log('No SFW events found in this batch');
         } else {
           console.log('No events found');
         }
@@ -583,7 +777,9 @@
       }
     }
 
-    function startApp() {
+    async function startApp() {
+      // Load NSFW model first (fail-closed: nothing shows until model is ready)
+      await loadNSFWModel();
       loadEvents();
       // Check for new events
       updateInterval = setInterval(loadEvents, 20000);
