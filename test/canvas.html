@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>InstallationGraffiti — Canvas</title>
+  <meta name="description" content="Tablet canvas for the InstallationGraffiti spatial drawing system. Tracks an ArUco marker via the front camera and renders strokes in real time.">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- js-aruco2: ArUco detection library -->
+  <script src="https://cdn.jsdelivr.net/npm/js-aruco2@2.0.0/src/cv.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-aruco2@2.0.0/src/aruco.js"></script>
+</head>
+<body>
+
+  <!-- Permission prompt (shown until camera is granted) -->
+  <div id="permission-screen">
+    <h1>InstallationGraffiti</h1>
+    <p>This app uses your front-facing camera to track an ArUco marker held on a smartphone. No video is recorded or transmitted.</p>
+    <button id="btn-start">Enable Camera</button>
+  </div>
+
+  <!-- Camera feed (low opacity background) -->
+  <video id="video-feed" autoplay playsinline muted></video>
+
+  <!-- Off-screen processing canvas (never shown) -->
+  <canvas id="scratch-canvas"></canvas>
+
+  <!-- Drawing surface -->
+  <canvas id="draw-canvas"></canvas>
+
+  <!-- Debug overlay -->
+  <div id="debug-overlay" style="display:none;">
+    <div class="row">
+      <span class="label">fps</span>
+      <span class="value" id="dbg-fps">—</span>
+    </div>
+    <div class="divider"></div>
+    <div class="row">
+      <span class="label">marker</span>
+      <span class="value" id="dbg-marker">—</span>
+    </div>
+    <div class="row">
+      <span class="label">x</span>
+      <span class="value" id="dbg-x">—</span>
+    </div>
+    <div class="row">
+      <span class="label">y</span>
+      <span class="value" id="dbg-y">—</span>
+    </div>
+    <div class="row">
+      <span class="label">z (size)</span>
+      <span class="value" id="dbg-z">—</span>
+    </div>
+    <div class="row">
+      <span class="label">brush</span>
+      <span class="value" id="dbg-brush">—</span>
+    </div>
+  </div>
+
+  <!-- Bottom toolbar -->
+  <div id="toolbar" style="display:none;">
+    <button id="btn-clear">Clear</button>
+    <button id="btn-undo">Undo</button>
+    <button id="btn-color">Color</button>
+    <button id="btn-save">Save</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
